@@ -1,0 +1,213 @@
+/* --- Global Body & Font --- */
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(135deg, #1b1b1b, #2a2a2a);
+  color: #e0e0e0;
+  overflow-x: hidden;
+}
+
+/* --- Floating Neon Background Shapes --- */
+body::before, body::after {
+  content: '';
+  position: fixed;
+  border-radius: 50%;
+  z-index: 0;
+  opacity: 0.15;
+  pointer-events: none;
+  animation: floatBG 30s linear infinite;
+}
+
+body::before {
+  width: 600px;
+  height: 600px;
+  top: -200px;
+  left: -200px;
+  background: radial-gradient(circle, #ff7eb3, transparent 70%);
+}
+
+body::after {
+  width: 700px;
+  height: 700px;
+  bottom: -250px;
+  right: -250px;
+  background: radial-gradient(circle, #2575fc, transparent 70%);
+}
+
+@keyframes floatBG {
+  0% { transform: translate(0,0) rotate(0deg); }
+  50% { transform: translate(50px,50px) rotate(180deg); }
+  100% { transform: translate(0,0) rotate(360deg); }
+}
+
+/* --- Page Container --- */
+.men-container {
+  position: relative;
+  min-height: 100vh;
+  padding: 50px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1;
+}
+
+/* --- Neon Gradient Title --- */
+.men-title {
+  font-size: 3rem;
+  font-weight: 800;
+  text-align: center;
+  margin-bottom: 30px;
+  background: linear-gradient(135deg, #ff7eb3, #ff758c, #2575fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: titleFade 1s ease-out;
+  text-shadow: 0 0 10px #ff7eb3, 0 0 20px #ff758c;
+}
+
+@keyframes titleFade {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Controls --- */
+.controls {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+
+.sort-dropdown {
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: none;
+  background: #1f1f1f;
+  color: #eee;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.sort-dropdown:hover {
+  box-shadow: 0 6px 14px rgba(255, 120, 180, 0.3);
+}
+
+/* --- Product Grid --- */
+.men-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 28px;
+  width: 100%;
+  max-width: 1300px;
+}
+
+/* --- Product Card --- */
+.product-card {
+  background: #1f1f1f;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  transition: transform 0.35s ease, box-shadow 0.35s ease, filter 0.35s ease;
+  position: relative;
+}
+
+.product-card:hover {
+  transform: translateY(-10px) rotateX(3deg) rotateY(3deg) scale(1.05);
+  box-shadow: 0 20px 40px rgba(255, 120, 180, 0.4);
+  filter: brightness(1.05);
+}
+
+/* --- Product Image --- */
+.product-image-container {
+  width: 100%;
+  height: 240px;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.product-card:hover .product-image {
+  transform: scale(1.1);
+}
+
+/* --- Product Info --- */
+.product-name {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 12px 16px 4px;
+  background: linear-gradient(90deg, #6a11cb, #2575fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 0 6px #6a11cb, 0 0 10px #2575fc;
+}
+
+.product-brand {
+  font-size: 0.95rem;
+  color: #ccc;
+  margin: 0 16px 8px;
+}
+
+.product-price {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #ff7eb3;
+  margin: 0 16px 16px;
+}
+
+/* --- Wishlist Button --- */
+.wishlist-button {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: #1f1f1f;
+  border: 2px solid #ff7eb3;
+  color: #ff7eb3;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.wishlist-button.active {
+  background: #ff7eb3;
+  color: #fff;
+  animation: pulse 1.2s infinite;
+}
+
+.wishlist-button:hover {
+  transform: scale(1.3);
+}
+
+/* --- Pulse Animation --- */
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+/* --- Responsive --- */
+@media (max-width: 992px) {
+  .product-image-container { height: 200px; }
+}
+
+@media (max-width: 768px) {
+  .men-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .product-image-container { height: 180px; }
+}
+
+@media (max-width: 480px) {
+  .men-grid { grid-template-columns: 1fr; gap: 14px; }
+  .product-image-container { height: 150px; }
+  .men-title { font-size: 2.2rem; }
+}

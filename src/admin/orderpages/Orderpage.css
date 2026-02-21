@@ -1,0 +1,267 @@
+.upage-orders-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.upage-orders-title {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.upage-order-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+}
+
+.upage-order-card:hover {
+  transform: translateY(-5px);
+}
+
+.upage-order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.upage-remove-btn,
+.upage-cancel-btn,
+.upage-admin-actions button {
+  background-color: #ff4d4d;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 12px;
+  cursor: pointer;
+  margin-right: 8px;
+  transition: 0.2s;
+}
+
+.upage-remove-btn:hover,
+.upage-cancel-btn:hover,
+.upage-admin-actions button:hover {
+  background-color: #e63946;
+}
+
+.upage-order-items {
+  list-style: none;
+  padding-left: 0;
+  margin-bottom: 10px;
+}
+
+.upage-order-item {
+  padding: 6px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.upage-order-status {
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.upage-order-status.pending {
+  color: #f0ad4e;
+}
+.upage-order-status.delivered {
+  color: #28a745;
+}
+.upage-order-status.cancelled {
+  color: #dc3545;
+}
+
+.upage-countdown {
+  font-weight: bold;
+  color: #007bff;
+}
+
+.upage-no-orders {
+  text-align: center;
+  font-size: 1.5rem;
+  margin-top: 50px;
+  color: #555;
+}
+
+.upage-loading-text {
+  text-align: center;
+  font-size: 1.3rem;
+  margin-top: 50px;
+  color: #333;
+}
+
+@media (max-width: 768px) {
+  .upage-orders-container {
+    padding: 10px;
+  }
+  .upage-order-card {
+    padding: 15px;
+  }
+  .upage-orders-title {
+    font-size: 1.5rem;
+  }
+}
+
+
+.upage-orders-container {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 0 15px;
+  font-family: Arial, sans-serif;
+}
+
+.upage-orders-title {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 2rem;
+  color: #333;
+}
+
+.upage-order-card {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 15px 20px;
+  margin-bottom: 20px;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.upage-order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.upage-remove-btn,
+.upage-cancel-btn,
+.upage-admin-actions button {
+  background-color: #f44336;
+  border: none;
+  color: #fff;
+  padding: 7px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 5px;
+  transition: 0.2s;
+}
+
+.upage-remove-btn:hover,
+.upage-cancel-btn:hover,
+.upage-admin-actions button:hover {
+  background-color: #d32f2f;
+}
+
+.upage-order-contact,
+.upage-order-address,
+.upage-order-total,
+.upage-countdown,
+.upage-order-status {
+  margin: 8px 0;
+  color: #555;
+}
+
+.upage-order-items {
+  list-style-type: disc;
+  margin-left: 20px;
+}
+
+.upage-order-item {
+  margin-bottom: 5px;
+}
+
+.upage-admin-actions {
+  margin-top: 10px;
+}
+
+.upage-order-status.pending {
+  color: #ff9800;
+  font-weight: bold;
+}
+
+.upage-order-status.cancelled {
+  color: #f44336;
+  font-weight: bold;
+}
+
+.upage-order-status.delivered {
+  color: #4caf50;
+  font-weight: bold;
+}
+
+.upage-countdown {
+  font-weight: bold;
+  color: #2196f3;
+}
+
+.upage-loading-text,
+.upage-no-orders {
+  text-align: center;
+  margin-top: 50px;
+  font-size: 1.2rem;
+  color: #777;
+}
+
+
+.upage-confirm-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.upage-confirm-box {
+  background-color: #fff;
+  padding: 25px 30px;
+  border-radius: 10px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+}
+
+.upage-confirm-box p {
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+}
+
+.upage-confirm-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.upage-confirm-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.upage-confirm-btn.yes {
+  background-color: #f44336;
+  color: #fff;
+}
+
+.upage-confirm-btn.yes:hover {
+  background-color: #d32f2f;
+}
+
+.upage-confirm-btn.no {
+  background-color: #9e9e9e;
+  color: #fff;
+}
+
+.upage-confirm-btn.no:hover {
+  background-color: #757575;
+}

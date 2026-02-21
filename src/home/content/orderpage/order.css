@@ -1,0 +1,238 @@
+
+.unique-orders {
+  max-width: 1000px;
+  margin: 50px auto;
+  padding: 20px;
+  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #fff0f5, #f0f8ff);
+  border-radius: 25px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+}
+
+.cancel-all-btn {
+  background: linear-gradient(135deg, #ff6b6b, #ff4d4f);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-bottom: 30px;
+  transition: all 0.3s ease;
+}
+.cancel-all-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255,77,79,0.4);
+}
+
+.order-card {
+  background: white;
+  border-radius: 20px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.order-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.cancel-order-btn {
+  background: linear-gradient(135deg, #ff914d, #ff6b3b);
+  border: none;
+  padding: 6px 14px;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.cancel-order-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255,77,79,0.4);
+}
+
+.customer-info p {
+  margin: 4px 0;
+  font-size: 14px;
+}
+
+.order-items-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin: 15px 0;
+}
+
+.order-item {
+  background-color: #f7f9ff;
+  display: flex;
+  border-radius: 15px;
+  overflow: hidden;
+  width: 48%;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.order-item:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+}
+
+.order-item-img {
+  width: 100px;
+  object-fit: cover;
+}
+
+.order-item-info {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  font-size: 13px;
+}
+
+.order-total {
+  text-align: right;
+  font-weight: bold;
+  color: #4a90e2;
+  font-size: 16px;
+}
+
+.no-orders,
+.no-items {
+  text-align: center;
+  font-style: italic;
+  color: #555;
+  padding: 30px 15px;
+  border-radius: 12px;
+  background: #f0f4f8;
+  border: 2px dashed #c0c0c0;
+  font-size: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.no-orders::before {
+  content: "📦";
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+.confirm-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.confirm-box {
+  background-color: white;
+  padding: 20px 30px;
+  border-radius: 15px;
+  text-align: center;
+  width: 90%;
+  max-width: 350px;
+  animation: fadeIn 0.4s ease;
+}
+.confirm-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+  gap: 10px;
+}
+.confirm-btn {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.confirm-btn.yes {
+  background: linear-gradient(135deg, #ff4d4f, #ff7875);
+  color: #fff;
+}
+.confirm-btn.no {
+  background: #ccc;
+  color: #000;
+}
+.confirm-btn.yes:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(255,77,79,0.4);
+}
+.confirm-btn.no:hover {
+  background: #aaa;
+}
+
+
+@media (max-width: 768px) {
+  .unique-orders {
+    padding: 12px;
+    margin: 20px 10px;
+  }
+
+  .cancel-all-btn {
+    width: 100%;
+    font-size: 14px;
+    padding: 10px 0;
+    border-radius: 10px;
+  }
+
+  .order-card {
+    padding: 15px;
+    margin-bottom: 15px;
+  }
+
+  .order-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .order-items-list {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .order-item {
+    width: 100%;
+    flex-direction: row;
+  }
+
+  .order-item-img {
+    width: 80px;
+    height: 80px;
+  }
+
+  .order-item-info {
+    font-size: 12px;
+    padding: 8px;
+  }
+
+  .order-total {
+    font-size: 14px;
+  }
+
+  .cancel-order-btn {
+    width: 100%;
+    font-size: 14px;
+    padding: 8px 0;
+  }
+}
