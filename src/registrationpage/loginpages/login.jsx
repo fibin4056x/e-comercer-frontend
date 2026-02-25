@@ -1,17 +1,19 @@
 import "./login.css";
 import React, { useContext, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
-import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { Context } from "./Logincontext";
 import { toast } from "react-toastify";
+import { request } from "../../services/api";
 
 export default function Login() {
+  const { setUser } = useContext(Context);
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { setuser } = useContext(Context);
   const [show, setShow] = useState(false);
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,34 +23,28 @@ export default function Login() {
       return;
     }
 
-    
-    const emailValid = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email);
-    if (!emailValid) {
-      toast.warning("Please enter a valid email address");
-      return;
-    }
-
     try {
-      const res = await axios.get("http://localhost:3000/user", {
-        params: { email, password },
+      setLoading(true);
+
+      const data = await request("/auth/login", "POST", {
+        email,
+        password,
       });
 
-      if (res.data.length > 0) {
-        const userData = res.data[0];
-        localStorage.setItem("user", JSON.stringify(userData));
-        setuser(userData);
-        setEmail("");
-        setPassword("");
-
-        toast.success("Login successful!");
-        navigate("/");
-        window.location.reload();
-      } else {
-        toast.error("Invalid email or password. Please register.");
+      // Make sure backend returns token
+      if (!data?.token) {
+        throw new Error("Invalid login response");
       }
+
+      localStorage.setItem("user", JSON.stringify(data));
+      setUser(data);
+
+      toast.success("Login successful!");
+      navigate("/");
     } catch (err) {
-      console.error(err);
-      toast.error("Something went wrong while logging in.");
+      toast.error(err.message || "Invalid credentials");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -61,9 +57,9 @@ export default function Login() {
           <p>Email</p>
           <input
             type="email"
-            placeholder="Enter your email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            placeholder="Enter your email"
           />
         </label>
 
@@ -73,8 +69,8 @@ export default function Login() {
             <input
               type={show ? "text" : "password"}
               value={password}
-              placeholder="Enter your password"
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
             />
             <button type="button" onClick={() => setShow(!show)}>
               {show ? <Eye size={18} /> : <EyeOff size={18} />}
@@ -83,9 +79,12 @@ export default function Login() {
         </label>
 
         <div className="form-actions">
-          <button type="submit" className="submit-btn">Login</button>
+          <button type="submit" className="submit-btn" disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
+          </button>
+
           <Link to="/" className="back-btn">Back</Link>
-          <Link to="/Registration" className="register-btn">Register</Link>
+          <Link to="/registration" className="register-btn">Register</Link>
         </div>
       </form>
     </div>

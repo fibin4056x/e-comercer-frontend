@@ -1,83 +1,80 @@
-import axios from 'axios';
-import React, { createContext, useEffect, useState } from 'react';
+import React, { createContext, useEffect, useState } from "react";
+import { request } from "../../services/api";
 
-const Context = createContext();
+export const Context = createContext();
 
 function Logincontext({ children }) {
+  const [user, setUser] = useState(null);
+  const [cart, setCart] = useState({ items: [] });
+  const [loadingUser, setLoadingUser] = useState(true);
 
-  const [user, setuser] = useState({
-    id: null,
-    username: '',
-    email: '',
-    password: ''
-  });
-  const [cart, setcart] = useState([]);
-
+  /* =========================
+     RESTORE USER FROM LOCALSTORAGE
+  ========================= */
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
+
     if (storedUser) {
-      setuser(JSON.parse(storedUser));
+      try {
+        const parsedUser = JSON.parse(storedUser);
+
+        if (parsedUser?.token) {
+          setUser(parsedUser);
+        } else {
+          localStorage.removeItem("user");
+        }
+      } catch {
+        localStorage.removeItem("user");
+      }
     }
+
+    setLoadingUser(false);
   }, []);
 
+  /* =========================
+     FETCH CART WHEN USER CHANGES
+  ========================= */
   useEffect(() => {
-    if (user && user.id) {
-      axios.get(`http://localhost:3000/cart?userId=${user.id}`)
-        .then((res) => setcart(res.data))
-        .catch(() => setcart([]));
-    }
+    const fetchCart = async () => {
+      if (!user?.token) {
+        setCart({ items: [] });
+        return;
+      }
+
+      try {
+        const data = await request("/cart", "GET", null, user.token);
+        setCart(data || { items: [] });
+      } catch {
+        setCart({ items: [] });
+      }
+    };
+
+    fetchCart();
   }, [user]);
 
- 
-  const addtocart = async (product) => {
-    if (!user || !user.id) {
-      alert("Please login to add item to cart");
-      return;
-    }
-
-    const existingItem = cart.find(item => item.id === product.id);
-
-    if (existingItem) {
-      const updatedItem = { ...existingItem, quantity: existingItem.quantity + 1 };
-      try {
-        await axios.put(`http://localhost:3000/cart/${existingItem.id}`, updatedItem);
-        setcart(cart.map(item => item.id === product.id ? updatedItem : item));
-      } catch (err) {
-        console.error(err);
-      }
-    } else {
-      const newitem = {
-        ...product,
-        userId: user.id,
-        quantity: 1
-      };
-      try {
-        const res = await axios.post('http://localhost:3000/cart', newitem);
-        setcart([...cart, res.data]);
-      } catch (err) {
-        console.error(err);
-      }
-    }
-  };
-
-
+  /* =========================
+     LOGOUT
+  ========================= */
   const logout = () => {
-    setuser({
-      id: null,
-      username: '',
-      email: '',
-      password: ''
-    });
-    setcart([]);
+    setUser(null);
+    setCart({ items: [] });
     localStorage.removeItem("user");
   };
 
   return (
-    <Context.Provider value={{ user, setuser, setcart, logout, cart, addtocart }}>
+    <Context.Provider
+      value={{
+        user,
+        setUser,
+        cart,
+        setCart,
+        logout,
+        loadingUser,
+      }}
+    >
       {children}
     </Context.Provider>
   );
 }
 
 export default Logincontext;
-export { Context };

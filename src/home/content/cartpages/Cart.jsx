@@ -1,110 +1,185 @@
-import React, { useContext } from "react";
+import React, { useContext, useMemo } from "react";
 import { Context } from "../../../registrationpage/loginpages/Logincontext";
 import "./cart.css";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
+import { request } from "../../../services/api";
 
 export default function Cart() {
-  const { cart, user, setcart } = useContext(Context);
+  const { cart, user, setCart } = useContext(Context);
 
-  const increaseQuantity = async (item) => {
-    try {
-      const updatedData = { quantity: item.quantity + 1 };
-      await axios.patch(`http://localhost:3000/cart/${item.id}`, updatedData);
-      setcart(
-        cart.map((i) =>
-          i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i
-        )
-      );
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to increase quantity");
-    }
-  };
+  const items = Array.isArray(cart?.items) ? cart.items : [];
 
-  const decreaseQuantity = async (item) => {
-    if (item.quantity <= 1) {
-      try {
-        await axios.delete(`http://localhost:3000/cart/${item.id}`);
-        setcart(cart.filter((i) => i.id !== item.id));
-        toast.info(`${item.name} removed from cart`);
-      } catch (err) {
-        console.error(err);
-        toast.error("Failed to remove item");
-      }
-      return;
-    }
+  const updateQuantity = async (item, quantity) => {
     try {
-      const updatedData = { quantity: item.quantity - 1 };
-      await axios.patch(`http://localhost:3000/cart/${item.id}`, updatedData);
-      setcart(
-        cart.map((i) =>
-          i.id === item.id ? { ...i, quantity: i.quantity - 1 } : i
-        )
+      const productId =
+        typeof item.product === "object"
+          ? item.product._id
+          : item.product;
+
+      const updated = await request(
+        "/cart",
+        "PUT",
+        {
+          productId,
+          quantity,
+          size: item.size,
+          color: item.color,
+        },
+        user.token
       );
+
+      setCart(updated);
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to decrease quantity");
+      toast.error(err.message || "Update failed");
     }
   };
 
   const removeItem = async (item) => {
     try {
-      await axios.delete(`http://localhost:3000/cart/${item.id}`);
-      setcart(cart.filter((i) => i.id !== item.id));
-      toast.info(`${item.name} removed from cart`);
+      const productId =
+        typeof item.product === "object"
+          ? item.product._id
+          : item.product;
+
+      const encodedSize = encodeURIComponent(item.size);
+      const encodedColor = encodeURIComponent(item.color);
+
+      const updated = await request(
+        `/cart/${productId}/${encodedSize}/${encodedColor}`,
+        "DELETE",
+        null,
+        user.token
+      );
+
+      setCart(updated);
+      toast.success("Item removed");
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to remove item");
+      toast.error(err.message || "Remove failed");
     }
   };
 
-  if (!user) return <h2>Please login to see your cart</h2>;
-  if (!cart) return <h2>Loading cart...</h2>;
+  const totalPrice = useMemo(() => {
+    return items.reduce(
+      (total, item) =>
+        total +
+        (item.product?.price || 0) *
+          (item.quantity || 0),
+      0
+    );
+  }, [items]);
+
+  if (!user) return <h2 className="cart-msg">Login required</h2>;
+  if (!cart) return <h2 className="cart-msg">Loading...</h2>;
 
   return (
-    <div className="cart-container cool-cart">
-      <h1>{user.username}'s Cart 🛒</h1>
+    <div className="modern-cart">
+      <div className="cart-left">
+        <h1 className="cart-title">Shopping Cart</h1>
 
-      {cart.length === 0 ? (
-        <p>Your cart is empty.</p>
-      ) : (
-        <>
-          <ul className="cart-list">
-            {cart.map((item) => (
-              <li key={item.id} className="cart-item">
-                <img
-                  src={item.images?.[0] || "/placeholder.png"}
-                  alt={item.name || "Product"}
-                  className="cart-item-img"
-                />
-                <div className="cart-item-info">
-                  <h3>{item.name}</h3>
-                  <p>Price: ${item.price}</p>
-                  <div className="quantity-buttons">
-                    <button onClick={() => decreaseQuantity(item)}>-</button>
-                    <span>{item.quantity}</span>
-                    <button onClick={() => increaseQuantity(item)}>+</button>
-                    <button
-                      className="remove"
-                      onClick={() => removeItem(item)}
-                    >
-                      Remove
-                    </button>
-                  </div>
-               
-                </div>
-              </li>
-            ))}
-          </ul>
-
-          <div className="checkout-container">
-            <Link to={`order/`} className="checkout-btn">
-              Checkout All
+        {items.length === 0 ? (
+          <div className="empty-box">
+            <p>Your cart is empty.</p>
+            <Link to="/" className="shop-link">
+              Continue Shopping
             </Link>
           </div>
-        </>
+        ) : (
+          items.map((item, index) => (
+            <div
+              key={`${item.product._id}-${item.size}-${item.color}-${index}`}
+              className="cart-row"
+            >
+              <img
+                src={
+                  item.product.images?.[0] ||
+                  "/placeholder.png"
+                }
+                alt={item.product.name}
+                className="cart-img"
+              />
+
+              <div className="cart-content">
+                <h3>{item.product.name}</h3>
+
+                <p className="variant">
+                  {item.size} • {item.color}
+                </p>
+
+                <div className="cart-actions">
+                  <div className="qty-box">
+                    <button
+                      onClick={() =>
+                        updateQuantity(
+                          item,
+                          item.quantity - 1 <= 0
+                            ? 1
+                            : item.quantity - 1
+                        )
+                      }
+                    >
+                      −
+                    </button>
+
+                    <span>{item.quantity}</span>
+
+                    <button
+                      onClick={() =>
+                        updateQuantity(
+                          item,
+                          item.quantity + 1
+                        )
+                      }
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  <button
+                    className="remove"
+                    onClick={() => removeItem(item)}
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+
+              <div className="cart-price">
+                ₹
+                {(item.product.price * item.quantity).toFixed(2)}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {items.length > 0 && (
+        <div className="cart-right">
+          <div className="summary-card">
+            <h2>Order Summary</h2>
+
+            <div className="summary-line">
+              <span>Subtotal</span>
+              <span>₹{totalPrice.toFixed(2)}</span>
+            </div>
+
+            <div className="summary-line">
+              <span>Shipping</span>
+              <span>Free</span>
+            </div>
+
+            <hr />
+
+            <div className="summary-total">
+              <span>Total</span>
+              <span>₹{totalPrice.toFixed(2)}</span>
+            </div>
+
+            <Link to="/checkout" className="checkout-btn">
+              Checkout
+            </Link>
+          </div>
+        </div>
       )}
     </div>
   );

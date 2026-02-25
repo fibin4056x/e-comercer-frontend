@@ -1,6 +1,13 @@
 import axios from "axios";
-import React, { createContext, useState, useContext, useEffect } from "react";
-import { Context as LoginContext } from "../loginpages/Logincontext"; 
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  useCallback
+} from "react";
+import { Context as LoginContext } from "../loginpages/Logincontext";
+import { request } from "../../services/api";
 
 const WishlistContext = createContext();
 
@@ -8,55 +15,89 @@ function WishlistProvider({ children }) {
   const { user } = useContext(LoginContext);
   const [wishlist, setWishlist] = useState([]);
 
-  useEffect(() => {
-    if (user && user.id) {
-      fetchWishlist();
-    } else {
+  /* =========================
+     FETCH WISHLIST (MEMOIZED)
+  ========================= */
+  const fetchWishlist = useCallback(async () => {
+    if (!user?.token) return;
+
+    try {
+      console.log("📦 Fetching wishlist...");
+
+      const data = await request("/wishlist", "GET", null, user.token);
+
+      console.log("✅ Wishlist count:", data.length);
+
+      setWishlist(data || []);
+    } catch (error) {
+      console.error("🔥 Wishlist Fetch Error:", error);
       setWishlist([]);
     }
   }, [user]);
 
-  const fetchWishlist = () => {
-    if (!user || !user.id) return;
-    axios
-      .get(`http://localhost:3000/wishlist?userId=${user.id}`)
-      .then((res) => setWishlist(res.data))
-      .catch((err) => {
-        console.error("Failed to fetch wishlist:", err);
-        setWishlist([]);
-      });
-  };
-
-
-  const addToWishlist = (item) => {
-    if (!user || !user.id) {
-      alert("Please login to add item to wishlist");
-      return;
-    }
-
-    const exists = wishlist.some((w) => w.id === item.id);
-    if (!exists) {
-      const newItem = { ...item, userId: user.id };
-      axios
-        .post("http://localhost:3000/wishlist", newItem)
-        .then((res) => setWishlist([...wishlist, res.data]))
-        .catch((err) => console.error("Failed to add to wishlist:", err));
+  /* =========================
+     LOAD WHEN USER CHANGES
+  ========================= */
+  useEffect(() => {
+    if (user?.token) {
+      fetchWishlist();
     } else {
-      alert("Item already in wishlist");
+      setWishlist([]);
+    }
+  }, [user, fetchWishlist]);
+
+  /* =========================
+     ADD TO WISHLIST
+  ========================= */
+  const addToWishlist = async (product) => {
+    try {
+      console.log("❤️ Adding to wishlist:", product._id);
+
+      const data = await request(
+        "/wishlist",
+        "POST",
+        { productId: product._id },
+        user.token
+      );
+
+      setWishlist(data);
+
+      console.log("✅ Wishlist updated");
+    } catch (error) {
+      console.error("🔥 Add Wishlist Error:", error);
     }
   };
 
+  /* =========================
+     REMOVE FROM WISHLIST
+  ========================= */
+  const removeFromWishlist = async (productId) => {
+    try {
+      console.log("❌ Removing from wishlist:", productId);
 
-  const removeFromWishlist = (itemId) => {
-    axios
-      .delete(`http://localhost:3000/wishlist/${itemId}`)
-      .then(() => setWishlist(wishlist.filter((w) => w.id !== itemId)))
-      .catch((err) => console.error("Failed to remove from wishlist:", err));
+      const data = await request(
+        `/wishlist/${productId}`,
+        "DELETE",
+        null,
+        user.token
+      );
+
+      setWishlist(data);
+
+      console.log("✅ Wishlist updated");
+    } catch (error) {
+      console.error("🔥 Remove Wishlist Error:", error);
+    }
   };
 
   return (
     <WishlistContext.Provider
-      value={{ wishlist, setWishlist, addToWishlist, removeFromWishlist, fetchWishlist }}
+      value={{
+        wishlist,
+        addToWishlist,
+        removeFromWishlist,
+        fetchWishlist
+      }}
     >
       {children}
     </WishlistContext.Provider>

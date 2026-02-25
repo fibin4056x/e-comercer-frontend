@@ -1,170 +1,184 @@
-import axios from "axios";
-import React, { useEffect } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
-import "./checkout.css";
-import { useContext } from "react";
 import { Context } from "../../../registrationpage/loginpages/Logincontext";
-import  {useNavigate} from "react-router-dom"
-export default function Checkout() {
-  const { cart ,user,setCart} = useContext(Context);
+import { useNavigate } from "react-router-dom";
+import { request } from "../../../services/api";
+import "./checkout.css";
 
-  const  sub=()=>{
-    if(cart){
-      setTimeout(() => {
-     
-        window.location.reload()
-      }, 3000);
-    }
-}
-const navigate=useNavigate()
+export default function Checkout() {
+  const { cart, user, setCart } = useContext(Context);
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+
+  const items = Array.isArray(cart?.items) ? cart.items : [];
+
+  const total = useMemo(() => {
+    return items.reduce(
+      (sum, item) =>
+        sum +
+        (item.product?.price || 0) *
+          (item.quantity || 0),
+      0
+    );
+  }, [items]);
+
   const {
     register,
     handleSubmit,
     formState: { errors },
-    reset
+    reset,
   } = useForm();
-  ;
-
-  const total = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-
 
   const onSubmit = async (data) => {
-    sub();
-    try {
-      const orderData = {
-        ...data,
-        userId: user.id,
-        items: cart,
-        total
-      };
-      
-      const response = await axios.post(
-        "http://localhost:3000/order",
-        orderData
-      );   
-       for (const item of cart) {
-      await axios.delete(`http://localhost:3000/cart/${item.id}`);
+    if (!user?.token) {
+      toast.error("Please login first");
+      navigate("/login");
+      return;
     }
-    
-   
-      console.log(response.data);
+
+    if (items.length === 0) {
+      toast.error("Your cart is empty");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const orderData = {
+        shippingAddress: {
+          address: data.address.trim(),
+          city: data.city.trim(),
+          postalCode: data.postalCode.trim(),
+          country: data.country,
+        },
+      };
+
+      await request(
+        "/orders",
+        "POST",
+        orderData,
+        user.token
+      );
+
       toast.success("Order placed successfully");
-    
+
+      setCart({ items: [], total: 0 });
       reset();
-        navigate("/")
-    } catch (error) {
-      console.error(error);
-      toast.error("Something went wrong");
+      navigate("/");
+    } catch (err) {
+      toast.error(err.message || "Order failed");
+    } finally {
+      setLoading(false);
     }
   };
 
+  if (!user)
+    return <h2 className="checkout-msg">Login required</h2>;
+
+  if (items.length === 0)
+    return <h2 className="checkout-msg">Cart is empty</h2>;
+
   return (
     <div className="checkout-container">
-      <h2 className="checkout-title">Checkout</h2>
+      <div className="checkout-left">
+        <h2>Shipping Details</h2>
 
+        <form onSubmit={handleSubmit(onSubmit)} noValidate>
 
-      <div className="cart-summary">
-        <h3>Order Summary</h3>
-        {cart.length === 0 ? (
-          <p>Your cart is empty</p>
-        ) : (
-          <ul>
-            {cart.map((item) => (
-              <li key={item.id}>
-                <strong>{item.name}</strong> × {item.quantity} ={" "}
-                ${item.price * item.quantity}
-              </li>
-            ))}
-          </ul>
-        )}
-        <h4>Total: ${total}</h4>
+          {/* ADDRESS */}
+          <input
+            placeholder="Address"
+            {...register("address", {
+              required: "Address is required",
+              minLength: {
+                value: 5,
+                message: "Address must be at least 5 characters",
+              },
+              validate: (value) =>
+                value.trim().length > 0 ||
+                "Address cannot be empty",
+            })}
+          />
+          {errors.address && <p className="error">{errors.address.message}</p>}
+
+          {/* CITY */}
+          <input
+            placeholder="City"
+            {...register("city", {
+              required: "City is required",
+              minLength: {
+                value: 2,
+                message: "City must be at least 2 characters",
+              },
+              pattern: {
+                value: /^[A-Za-z\s]+$/,
+                message: "City must contain only letters",
+              },
+            })}
+          />
+          {errors.city && <p className="error">{errors.city.message}</p>}
+
+          {/* POSTAL CODE */}
+          <input
+            placeholder="Postal Code"
+            {...register("postalCode", {
+              required: "Postal code is required",
+              pattern: {
+                value: /^[0-9]{6}$/,
+                message: "Postal code must be 6 digits",
+              },
+            })}
+          />
+          {errors.postalCode && (
+            <p className="error">{errors.postalCode.message}</p>
+          )}
+
+          {/* COUNTRY (Dropdown – Recommended) */}
+          <select
+            {...register("country", {
+              required: "Please select a country",
+            })}
+          >
+            <option value="">Select Country</option>
+            <option value="India">India</option>
+            <option value="USA">USA</option>
+            <option value="UK">UK</option>
+            <option value="Canada">Canada</option>
+          </select>
+          {errors.country && (
+            <p className="error">{errors.country.message}</p>
+          )}
+
+          <button type="submit" disabled={loading}>
+            {loading ? "Placing Order..." : "Place Order"}
+          </button>
+        </form>
       </div>
 
-      <form className="checkout-form" onSubmit={handleSubmit(onSubmit)}>
-        <label className="checkout-label">Contact</label>
-        <input
-          className="checkout-input"
-          type="text"
-          placeholder="Contact number"
-          {...register("contact", {
-            required: "Contact is required",
-            pattern: {
-              value: /^[0-9]{10}$/,
-              message: "Must be 10 digits"
-            }
-          })}
-        />
-        {errors.contact && (
-          <p className="checkout-error">{errors.contact.message}</p>
-        )}
+      <div className="checkout-right">
+        <h2>Order Summary</h2>
 
-        <label className="checkout-label">First Name</label>
-        <input
-          className="checkout-input"
-          type="text"
-          placeholder="First name"
-          {...register("firstname", { required: "First name is required" })}
-        />
-        {errors.firstname && (
-          <p className="checkout-error">{errors.firstname.message}</p>
-        )}
+        {items.map((item, index) => (
+          <div key={index} className="summary-row">
+            <span>
+              {item.product.name} × {item.quantity}
+            </span>
+            <span>
+              ₹
+              {(item.product.price *
+                item.quantity).toFixed(2)}
+            </span>
+          </div>
+        ))}
 
-        <label className="checkout-label">Last Name</label>
-        <input
-          className="checkout-input"
-          type="text"
-          placeholder="Last name"
-          {...register("lastname", { required: "Last name is required" })}
-        />
-        {errors.lastname && (
-          <p className="checkout-error">{errors.lastname.message}</p>
-        )}
+        <hr />
 
-        <label className="checkout-label">Address</label>
-        <input
-          className="checkout-input"
-          type="text"
-          placeholder="Street address"
-          {...register("address", { required: "Address is required" })}
-        />
-        {errors.address && (
-          <p className="checkout-error">{errors.address.message}</p>
-        )}
-
-        <label className="checkout-label">City</label>
-        <input
-          className="checkout-input"
-          type="text"
-          placeholder="City"
-          {...register("city", { required: "City is required" })}
-        />
-        {errors.city && <p className="checkout-error">{errors.city.message}</p>}
-
-        <label className="checkout-label">Postal Code</label>
-        <input
-          className="checkout-input"
-          type="text"
-          placeholder="Postal Code"
-          {...register("postalcode", {
-            required: "Postal code is required",
-            pattern: {
-              value: /^[0-9]{5,6}$/,
-              message: "Must be 5–6 digits"
-            }
-          })}
-        />
-        {errors.postalcode && (
-          <p className="checkout-error">{errors.postalcode.message}</p>
-        )}
-
-        <button className="checkout-button" type="submit" >
-          Place Order
-        </button>
-      </form>
+        <div className="summary-total">
+          <strong>Total</strong>
+          <strong>₹{total.toFixed(2)}</strong>
+        </div>
+      </div>
     </div>
   );
 }

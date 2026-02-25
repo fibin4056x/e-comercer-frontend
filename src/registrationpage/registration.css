@@ -1,113 +1,118 @@
-
 .registration-page {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #f0f4ff, #fdf6ff);
+  background: linear-gradient(135deg, #667eea, #764ba2);
   font-family: 'Poppins', sans-serif;
 }
 
-
 .registration-form {
-  background: #ffffff;
-  padding: 40px 30px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(18px);
+  padding: 45px 35px;
   border-radius: 25px;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.1);
-  width: 350px;
+  width: 360px;
   display: flex;
   flex-direction: column;
   gap: 20px;
-  transition: transform 0.3s, box-shadow 0.3s;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+  transition: 0.3s ease;
 }
 
 .registration-form:hover {
   transform: translateY(-5px);
-  box-shadow: 0 25px 60px rgba(0,0,0,0.15);
 }
 
 .registration-form h2 {
   text-align: center;
-  color: #4a90e2;
+  color: #fff;
   font-size: 1.8rem;
-  margin-bottom: 20px;
+  margin-bottom: 10px;
 }
 
-
-.input-group p {
-  margin-bottom: 5px;
-  font-weight: 600;
-  color: #555;
-}
-
-.input-group input {
+.input-group input,
+.password-wrapper input {
   width: 100%;
-  padding: 12px 15px;
-  border-radius: 12px;
-  border: 1px solid #ccc;
+  padding: 14px 15px;
+  border-radius: 14px;
+  border: none;
   outline: none;
-  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  transition: 0.3s;
 }
 
-.input-group input:focus {
-  border-color: #4a90e2;
-  box-shadow: 0 0 8px rgba(74,144,226,0.3);
+.input-group input:focus,
+.password-wrapper input:focus {
+  box-shadow: 0 0 10px rgba(255,255,255,0.5);
 }
-
 
 .password-wrapper {
   display: flex;
   align-items: center;
+  background: #fff;
+  border-radius: 14px;
+  padding-right: 10px;
+}
+
+.password-wrapper input {
+  border: none;
+  flex: 1;
 }
 
 .password-wrapper button {
   background: none;
   border: none;
-  margin-left: 10px;
   cursor: pointer;
   color: #555;
-  display: flex;
-  align-items: center;
 }
 
-
 .submit-btn {
-  padding: 15px;
+  padding: 14px;
   border: none;
   border-radius: 15px;
-  background: linear-gradient(135deg, #4a90e2, #50e3c2);
+  background: linear-gradient(135deg, #ff6a00, #ee0979);
   color: white;
   font-weight: bold;
-  font-size: 1.1rem;
+  font-size: 1rem;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: 0.3s;
 }
 
 .submit-btn:hover {
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  transform: scale(1.03);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
 }
 
+.submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.bottom-login {
+  text-align: center;
+  color: #fff;
+}
+
+.login-btn-alt {
+  display: inline-block;
+  margin-top: 5px;
+  padding: 8px 20px;
+  border-radius: 12px;
+  background: white;
+  color: #764ba2;
+  text-decoration: none;
+  font-weight: 600;
+  transition: 0.3s;
+}
+
+.login-btn-alt:hover {
+  transform: scale(1.05);
+}
 
 @media (max-width: 400px) {
   .registration-form {
     width: 90%;
     padding: 30px 20px;
   }
-}
-
-
-.password-wrapper {
-  display: flex;
-  align-items: center;
-}
-
-.password-wrapper button {
-  background: none;
-  border: none;
-  margin-left: 10px;
-  cursor: pointer;
-  color: #555;
-  display: flex;
-  align-items: center;
 }

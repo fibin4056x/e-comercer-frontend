@@ -1,83 +1,135 @@
-import axios from 'axios';
-import React, { useEffect, useState, useContext } from 'react';
-import { Link } from 'react-router-dom';
-import './women.css';
-import { WishlistContext } from '../../../registrationpage/wishlisht/wishlistcontext';
-import { Context as Logincontext } from '../../../registrationpage/loginpages/Logincontext';
+import { useEffect, useState, useContext, useMemo } from "react";
+import { Link } from "react-router-dom";
+import "./women.css";
+import { WishlistContext } from "../../../registrationpage/wishlisht/wishlistcontext";
+import { Context as Logincontext } from "../../../registrationpage/loginpages/Logincontext";
+import { request } from "../../../services/api";
+import { toast } from "react-toastify";
 
 export default function Women() {
-  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [data, setData] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortOption, setSortOption] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
   const { user } = useContext(Logincontext);
-  const { wishlist, addToWishlist, removeFromWishlist, fetchWishlist } = useContext(WishlistContext);
+  const {
+    wishlist = [],
+    addToWishlist,
+    removeFromWishlist,
+    fetchWishlist,
+  } = useContext(WishlistContext);
 
   useEffect(() => {
-    axios.get("http://localhost:3000/products")
-      .then((res) => {
-        setFilteredProducts(
-          res.data.filter(item => item.category.toLowerCase() === 'women')
-        );
-      })
-      .catch(err => console.log(err));
+    const fetchWomen = async () => {
+      try {
+        console.log("📦 Fetching WOMEN products...");
+        setLoading(true);
+
+        const products = await request("/products?category=women");
+
+        console.log("✅ WOMEN loaded:", products.length);
+        setData(products || []);
+      } catch (err) {
+        console.error("🔥 WOMEN fetch error:", err);
+        setError("Failed to load women's products");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWomen();
   }, []);
 
   useEffect(() => {
-    if (user) fetchWishlist();
+    if (user?.token) {
+      fetchWishlist();
+    }
   }, [user, fetchWishlist]);
 
-  const handleSort = (e) => {
-    const sortBy = e.target.value;
-    let sortedData = [...filteredProducts];
+  const wishlistIds = useMemo(
+    () => new Set(wishlist.map((w) => w._id)),
+    [wishlist]
+  );
 
-    if (sortBy === "lowtohigh") {
-      sortedData.sort((a, b) => a.price - b.price);
-    } else if (sortBy === "hightolow") {
-      sortedData.sort((a, b) => b.price - a.price);
+  const isInWishlist = (id) => wishlistIds.has(id);
+
+  const filteredProducts = useMemo(() => {
+    let result = data.filter((p) =>
+      p.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    if (sortOption === "lowtohigh") {
+      result.sort((a, b) => a.price - b.price);
+    } else if (sortOption === "hightolow") {
+      result.sort((a, b) => b.price - a.price);
     }
-    setFilteredProducts(sortedData);
-  };
 
-  const toggleWishlist = (product) => {
+    return result;
+  }, [data, searchTerm, sortOption]);
+
+  const toggleWishlist = async (product) => {
     if (!user) {
-      alert("Please login to add item to wishlist");
+      toast.info("Please login first");
       return;
     }
-    const exists = wishlist.some((item) => item.id === product.id);
-    if (exists) {
-      const itemInWishlist = wishlist.find((w) => w.id === product.id);
-      removeFromWishlist(itemInWishlist.id);
-    } else {
-      addToWishlist(product);
+
+    try {
+      if (isInWishlist(product._id)) {
+        await removeFromWishlist(product._id);
+      } else {
+        await addToWishlist(product);
+      }
+    } catch (err) {
+      console.error("🔥 Wishlist error:", err);
+      toast.error("Wishlist update failed");
     }
   };
-
-  const isInWishlist = (product) => wishlist.some((item) => item.id === product.id);
 
   return (
     <div className="women-container">
-      <h2 className="women-title">Women Products</h2>
+      <h2 className="women-title">Women's Collection</h2>
 
       <div className="controls">
-        <select name="sort" id="sort" className="sort-dropdown" onChange={handleSort}>
+        <input
+          type="text"
+          placeholder="Search women's products..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="search-input"
+        />
+
+        <select
+          className="sort-dropdown"
+          onChange={(e) => setSortOption(e.target.value)}
+        >
           <option value="">Sort By Price</option>
           <option value="lowtohigh">Low to High</option>
           <option value="hightolow">High to Low</option>
         </select>
       </div>
 
-      {filteredProducts.length === 0 ? (
-        <p className="no-products">No products</p>
+      {loading ? (
+        <p className="loading-text">Loading...</p>
+      ) : error ? (
+        <p className="error-text">{error}</p>
+      ) : filteredProducts.length === 0 ? (
+        <p className="no-products">No products found</p>
       ) : (
         <div className="women-grid">
           {filteredProducts.map((item) => (
-            <div key={item.id} className="product-card">
+            <div key={item._id} className="product-card">
               <button
-                className={`wishlist-button ${isInWishlist(item) ? "active" : ""}`}
+                className={`wishlist-button ${
+                  isInWishlist(item._id) ? "active" : ""
+                }`}
                 onClick={() => toggleWishlist(item)}
               >
-                {isInWishlist(item) ? "♥" : "♡"}
+                {isInWishlist(item._id) ? "♥" : "♡"}
               </button>
 
-              <Link to={`/product/${item.id}`} className="product-card-link">
+              <Link to={`/product/${item._id}`}>
                 <div className="product-image-container">
                   <img
                     src={item.images?.[0] || "placeholder.jpg"}
@@ -87,7 +139,7 @@ export default function Women() {
                 </div>
                 <h3 className="product-name">{item.name}</h3>
                 <p className="product-brand">{item.brand}</p>
-                <p className="product-price">${item.price}</p>
+                <p className="product-price">₹{item.price}</p>
               </Link>
             </div>
           ))}
