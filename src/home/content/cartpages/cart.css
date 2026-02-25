@@ -5,10 +5,12 @@
   display: flex;
   gap: 50px;
   font-family: "Poppins", sans-serif;
+
 }
 
 .cart-left {
   flex: 2;
+  
 }
 
 .cart-right {
