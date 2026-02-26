@@ -127,3 +127,80 @@
     display: block;
   }
 }
+/* =========================
+   ADMIN LABEL
+========================= */
+.admin-label {
+  color: #f5a623;
+  font-weight: bold;
+}
+
+/* =========================
+   LOGOUT MODAL
+========================= */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+}
+
+.logout-modal {
+  background: #111;
+  padding: 30px;
+  border-radius: 12px;
+  width: 350px;
+  text-align: center;
+  border: 1px solid #222;
+}
+
+.logout-modal h3 {
+  margin-bottom: 10px;
+}
+
+.logout-modal p {
+  color: #aaa;
+  margin-bottom: 20px;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+.cancel-btn {
+  flex: 1;
+  padding: 8px;
+  background: #333;
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+}
+
+.cancel-btn:hover {
+  background: #444;
+}
+
+.confirm-btn {
+  flex: 1;
+  padding: 8px;
+  background: linear-gradient(135deg, #ff3d3d, #cc0000);
+  border: none;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.confirm-btn:hover {
+  box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
+}

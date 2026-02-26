@@ -21,6 +21,7 @@ export default function Index() {
   const { wishlist } = useContext(WishlistContext) || {};
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   /* =========================
      DERIVED VALUES
@@ -39,8 +40,9 @@ export default function Index() {
      HANDLERS
   ========================= */
 
-  const handleLogout = () => {
+  const confirmLogout = () => {
     logout?.();
+    setShowLogoutModal(false);
     setMenuOpen(false);
   };
 
@@ -102,7 +104,7 @@ export default function Index() {
             className="nav-icon"
           >
             {user?.role === "admin" ? (
-              "Admin"
+              <span className="admin-label">Admin</span>
             ) : (
               <User size={20} />
             )}
@@ -141,7 +143,7 @@ export default function Index() {
 
               <button
                 className="logout-btn"
-                onClick={handleLogout}
+                onClick={() => setShowLogoutModal(true)}
               >
                 <LogOut size={16} /> Logout
               </button>
@@ -153,6 +155,35 @@ export default function Index() {
       <div className="page-content">
         <Outlet />
       </div>
+
+      {/* =========================
+         LOGOUT CONFIRMATION MODAL
+      ========================= */}
+
+      {showLogoutModal && (
+        <div className="modal-overlay">
+          <div className="logout-modal">
+            <h3>Confirm Logout</h3>
+            <p>Are you sure you want to logout?</p>
+
+            <div className="modal-buttons">
+              <button
+                className="cancel-btn"
+                onClick={() => setShowLogoutModal(false)}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="confirm-btn"
+                onClick={confirmLogout}
+              >
+                Yes, Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

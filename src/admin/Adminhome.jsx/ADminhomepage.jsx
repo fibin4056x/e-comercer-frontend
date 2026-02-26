@@ -4,27 +4,27 @@ import {
   FaBoxOpen,
   FaShoppingCart,
   FaUsers,
-  FaPlus,
-  FaTrash
+  FaCogs,
 } from "react-icons/fa";
 import "./AdminHomepage.css";
 
 function AdminHomepage() {
   return (
     <div className="admin-container">
+
       {/* Sidebar */}
       <aside className="admin-sidebar">
         <h2 className="logo">AdminPanel</h2>
+
         <nav>
-          <Link to="/addproduct" className="nav-item">
-            <FaPlus /> Add Product
+          <Link to="/admin/products" className="nav-item">
+            <FaCogs /> Manage Products
           </Link>
-          <Link to="/removeproduct" className="nav-item">
-            <FaTrash /> Remove Product
-          </Link>
+
           <Link to="/orderpage" className="nav-item">
             <FaShoppingCart /> Orders
           </Link>
+
           <Link to="/users" className="nav-item">
             <FaUsers /> Users
           </Link>
@@ -33,11 +33,32 @@ function AdminHomepage() {
 
       {/* Main Content */}
       <main className="admin-main">
+
         <header className="admin-header">
-          <h1>Dashboard</h1>
-          <p>Manage your store efficiently</p>
+          <h1>Admin Dashboard</h1>
+          <p>Control your store from one place</p>
         </header>
 
+        {/* Manage Products Section */}
+        <div className="manage-section">
+          <h2>Product Management</h2>
+
+          <div className="button-group">
+            <Link to="/addproduct" className="admin-btn create">
+              Create Product
+            </Link>
+
+            <Link to="/admin/products" className="admin-btn update">
+              Update Product
+            </Link>
+
+            <Link to="/removeproduct" className="admin-btn delete">
+              Remove Product
+            </Link>
+          </div>
+        </div>
+
+        {/* Stats */}
         <div className="stats-grid">
           <div className="stat-card">
             <FaBoxOpen className="stat-icon" />
@@ -57,6 +78,7 @@ function AdminHomepage() {
             <p>Total Users</p>
           </div>
         </div>
+
       </main>
     </div>
   );

@@ -1,0 +1,110 @@
+/* ===============================
+   ADMIN PRODUCTS PAGE
+================================= */
+
+.admin-products-page {
+  padding: 40px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #111827, #1f2937);
+  color: white;
+}
+
+/* Header */
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.admin-header h2 {
+  font-size: 28px;
+  font-weight: 600;
+}
+
+.add-btn {
+  background: #22c55e;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: white;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.add-btn:hover {
+  background: #16a34a;
+}
+
+/* Product Row */
+.product-row {
+  background: #1f2937;
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  transition: 0.3s ease;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+}
+
+.product-row:hover {
+  transform: translateY(-3px);
+}
+
+.product-row img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-right: 20px;
+}
+
+.product-row .info {
+  flex: 1;
+}
+
+.product-row .info h4 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.product-row .info p {
+  margin: 5px 0 0;
+  opacity: 0.7;
+}
+
+/* Action Buttons */
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.actions .edit {
+  background: #3b82f6;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.actions .edit:hover {
+  background: #2563eb;
+}
+
+.actions .delete {
+  background: #ef4444;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.actions .delete:hover {
+  background: #dc2626;
+}

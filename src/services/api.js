@@ -1,32 +1,47 @@
-export const request = async (url, method = "GET", body = null, token = null) => {
-  const options = {
+export const request = async (url, method = "GET", body = null) => {
+  const response = await fetch(`http://localhost:5000/api${url}`, {
     method,
     headers: {
       "Content-Type": "application/json",
     },
-    credentials: "include",   // 🔥 REQUIRED FOR COOKIES
-  };
+    credentials: "include",
+    body: body ? JSON.stringify(body) : null,
+  });
 
-  if (body) {
-    options.body = JSON.stringify(body);
+  // Only attempt refresh for protected routes
+  if (response.status === 401 && !url.includes("/login") && !url.includes("/register") && !url.includes("/verify")) {
+
+    const refreshResponse = await fetch(
+      "http://localhost:5000/api/auth/refresh",
+      {
+        method: "POST",
+        credentials: "include",
+      }
+    );
+
+    if (refreshResponse.ok) {
+      const retryResponse = await fetch(`http://localhost:5000/api${url}`, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: body ? JSON.stringify(body) : null,
+      });
+
+      if (!retryResponse.ok) {
+        const errData = await retryResponse.json();
+        throw new Error(errData.message);
+      }
+
+      return await retryResponse.json();
+    }
   }
 
-  if (token) {
-    options.headers.Authorization = `Bearer ${token}`;
+  if (!response.ok) {
+    const errData = await response.json();
+    throw new Error(errData.message);
   }
 
-  const res = await fetch(`http://localhost:5000/api${url}`, options);
-
-  const data = await res.json().catch(() => ({}));
-
-  if (!res.ok) {
-    const errorMessage =
-      data.message ||
-      (data.errors && data.errors[0]?.msg) ||
-      "Request failed";
-
-    throw new Error(errorMessage);
-  }
-
-  return data;
+  return await response.json();
 };

@@ -1,20 +1,13 @@
 import "./registration.css";
-import React, { useState,useEffect ,useContext} from "react";
+import React, { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { request } from "../services/api";
 import { toast } from "react-toastify";
-import { Context } from "../registrationpage/loginpages/Logincontext";
 
 export default function Registration() {
-const { user } = useContext(Context);
-  
   const navigate = useNavigate();
- useEffect(() => {
-  if (user) {
-    navigate("/", { replace: true });
-  }
-}, [user, navigate]);
+
   const [form, setForm] = useState({
     username: "",
     email: "",

@@ -1,5 +1,5 @@
 import "./login.css";
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Context } from "./Logincontext";
@@ -7,7 +7,7 @@ import { toast } from "react-toastify";
 import { request } from "../../services/api";
 
 export default function Login() {
-  const { setUser } = useContext(Context);
+  const { user, setUser } = useContext(Context);
   const navigate = useNavigate();
 
   const [email, setEmail] = useState("");
@@ -15,12 +15,16 @@ export default function Login() {
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // 🚫 Prevent access to login if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate("/", { replace: true });
+    }
+  }, [user, navigate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    /* =========================
-       BASIC VALIDATION
-    ========================= */
     if (!email.trim() || !password.trim()) {
       toast.warning("Please fill in all fields");
       return;
@@ -33,47 +37,20 @@ export default function Login() {
 
     try {
       setLoading(true);
-      console.log("🔐 Attempting login for:", email);
 
-      const data = await request(
-        "/auth/login",
-        "POST",
-        { email, password },
-        true // withCredentials enabled
-      );
+      // Step 1: Login
+      await request("/auth/login", "POST", { email, password });
 
-      console.log("✅ Login success response:", data);
+      // Step 2: Verify token via profile
+      const profile = await request("/auth/profile", "GET");
 
-      /* =========================
-         GET PROFILE AFTER LOGIN
-         (since cookie is now set)
-      ========================= */
-      const profile = await request(
-        "/auth/profile",
-        "GET",
-        null,
-        true
-      );
-
-      console.log("👤 Profile fetched:", profile);
-
-      localStorage.setItem("user", JSON.stringify(profile));
       setUser(profile);
 
       toast.success("Login successful!");
-      navigate("/");
+      navigate("/", { replace: true });
 
     } catch (err) {
-      console.error("❌ Login Error:", err);
-
-      if (err.response) {
-        toast.error(err.response.data?.message || "Invalid credentials");
-      } else if (err.message) {
-        toast.error(err.message);
-      } else {
-        toast.error("Login failed");
-      }
-
+      toast.error(err.message || "Login failed");
     } finally {
       setLoading(false);
     }

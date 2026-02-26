@@ -91,3 +91,46 @@
 .stat-card p {
   color: #6b7280;
 }
+.manage-section {
+  margin: 40px 0;
+  padding: 30px;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+}
+
+.manage-section h2 {
+  margin-bottom: 20px;
+}
+
+.button-group {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.admin-btn {
+  padding: 12px 20px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: white;
+  font-weight: 500;
+  transition: 0.2s ease;
+}
+
+.admin-btn.create {
+  background: #2e7d32;
+}
+
+.admin-btn.update {
+  background: #1565c0;
+}
+
+.admin-btn.delete {
+  background: #c62828;
+}
+
+.admin-btn:hover {
+  transform: translateY(-3px);
+  opacity: 0.9;
+}

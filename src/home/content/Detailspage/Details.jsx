@@ -19,6 +19,9 @@ function Details() {
   const [selectedColor, setSelectedColor] = useState("");
   const [showLoginModal, setShowLoginModal] = useState(false);
 
+  const [reviewRating, setReviewRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState("");
+
   const BASE_URL = "http://localhost:5000";
 
   /* ================= FETCH PRODUCT ================= */
@@ -45,16 +48,13 @@ function Details() {
     fetchProduct();
   }, [id]);
 
-  /* ================= AUTO SELECT FIRST SIZE ================= */
+  /* ================= VARIANTS ================= */
 
   useEffect(() => {
     if (product?.variants?.length > 0) {
-      const firstSize = product.variants[0].size;
-      setSelectedSize(firstSize);
+      setSelectedSize(product.variants[0].size);
     }
   }, [product]);
-
-  /* ================= DERIVED VALUES ================= */
 
   const sizes = useMemo(() => {
     if (!product?.variants) return [];
@@ -139,19 +139,66 @@ function Details() {
     }
   };
 
+  /* ================= REVIEW LOGIC ================= */
+
+  const renderStars = (rating = 0) => {
+    return [...Array(5)].map((_, i) => (
+      <span key={i}>
+        {i < Math.round(rating) ? "★" : "☆"}
+      </span>
+    ));
+  };
+
+  const submitReview = async () => {
+    if (!user) {
+      toast.error("Login required");
+      return;
+    }
+
+    if (!reviewRating || !reviewComment.trim()) {
+      toast.error("Please add rating and comment");
+      return;
+    }
+
+    try {
+      const hasReviewed =
+        Array.isArray(product.reviews) &&
+        product.reviews.some(
+          (rev) => rev.user && rev.user._id === user._id
+        );
+
+      if (hasReviewed) {
+        await request(
+          `/products/${product._id}/reviews`,
+          "PUT",
+          { rating: reviewRating, comment: reviewComment }
+        );
+        toast.success("Review updated");
+      } else {
+        await request(
+          `/products/${product._id}/reviews`,
+          "POST",
+          { rating: reviewRating, comment: reviewComment }
+        );
+        toast.success("Review submitted");
+      }
+
+      const updated = await request(`/products/${id}`);
+      setProduct(updated);
+
+      setReviewRating(0);
+      setReviewComment("");
+
+    } catch (err) {
+      toast.error(err.message || "Action failed");
+    }
+  };
+
   if (loading)
     return <h2 style={{ textAlign: "center" }}>Loading...</h2>;
 
   if (!product)
     return <h2 style={{ textAlign: "center" }}>Product not found</h2>;
-
-  const renderStars = (rating = 0) => {
-  return [...Array(5)].map((_, i) => (
-    <span key={i}>
-      {i < Math.round(rating) ? "★" : "☆"}
-    </span>
-  ));
-};
 
   /* ================= UI ================= */
 
@@ -163,25 +210,6 @@ function Details() {
           alt={product.name}
           className="details-image"
         />
-
-        {product.images?.length > 1 && (
-          <div className="details-thumbnails">
-            {product.images.map((img, index) => {
-              const fullImg = `${BASE_URL}${img}`;
-              return (
-                <img
-                  key={index}
-                  src={fullImg}
-                  alt={`thumb-${index}`}
-                  className={`details-thumb ${
-                    mainImage === fullImg ? "active-thumb" : ""
-                  }`}
-                  onClick={() => setMainImage(fullImg)}
-                />
-              );
-            })}
-          </div>
-        )}
       </div>
 
       <div className="details-right">
@@ -190,120 +218,126 @@ function Details() {
 
         <div className="price-section">
           <span className="price">₹{product.price}</span>
+        </div>
 
-          {product.originalPrice && (
-            <span className="original-price">
-              ₹{product.originalPrice}
-            </span>
+        <div className="rating">
+          <div className="stars">
+            {renderStars(product.rating)}
+          </div>
+          <span>
+            {product.rating?.toFixed(1)} (
+            {Array.isArray(product.reviews)
+              ? product.reviews.length
+              : 0} reviews)
+          </span>
+        </div>
+
+        {/* Review List */}
+        <div className="review-list">
+          <h3>Customer Reviews</h3>
+
+          {Array.isArray(product.reviews) &&
+            product.reviews.length === 0 && (
+              <p>No reviews yet</p>
           )}
 
-          {product.discount > 0 && (
-            <span className="discount">
-              {product.discount}% OFF
-            </span>
-          )}
+          {Array.isArray(product.reviews) &&
+            product.reviews.map((rev) => {
+              const isOwner =
+                user && rev.user && rev.user._id === user._id;
+
+              return (
+                <div key={rev._id} className="review-item">
+                  <div className="review-header">
+                    <strong>{rev.name}</strong>
+                    <div>
+                      {"★".repeat(rev.rating)}
+                      {"☆".repeat(5 - rev.rating)}
+                    </div>
+                  </div>
+
+                  <p>{rev.comment}</p>
+
+                  {isOwner && (
+                    <div className="review-actions">
+                      <button
+                        className="edit-review-btn"
+                        onClick={() => {
+                          setReviewRating(rev.rating);
+                          setReviewComment(rev.comment);
+                        }}
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        className="delete-review-btn"
+                        onClick={async () => {
+                          try {
+                            await request(
+                              `/products/${product._id}/reviews`,
+                              "DELETE"
+                            );
+                            const updated = await request(`/products/${id}`);
+                            setProduct(updated);
+                            toast.success("Review removed");
+                          } catch {
+                            toast.error("Delete failed");
+                          }
+                        }}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+          })}
         </div>
 
-    <div className="rating">
-  <div className="stars">
-    {renderStars(product.rating)}
-  </div>
-  <span className="rating-text">
-    {product.rating?.toFixed(1)} ({product.reviews} reviews)
-  </span>
-</div>
-        <div className="variant-section">
-          <p>Select Size:</p>
-          <div className="variant-options">
-            {sizes.map(size => (
-              <button
-                key={size}
-                className={`variant-btn ${
-                  selectedSize === size ? "active" : ""
-                }`}
-                onClick={() => setSelectedSize(size)}
+        {/* Review Form */}
+        <div className="review-section">
+          <h3>Write a Review</h3>
+
+          <div className="star-select">
+            {[1,2,3,4,5].map((star) => (
+              <span
+                key={star}
+                onClick={() => setReviewRating(star)}
+                style={{
+                  cursor: "pointer",
+                  fontSize: "20px",
+                  color: star <= reviewRating ? "#f5a623" : "#ccc"
+                }}
               >
-                {size}
-              </button>
+                ★
+              </span>
             ))}
           </div>
-        </div>
 
-        <div className="variant-section">
-          <p>Select Color:</p>
-          <div className="variant-options">
-            {colors.map(color => (
-              <button
-                key={color}
-                className={`variant-btn ${
-                  selectedColor === color ? "active" : ""
-                }`}
-                onClick={() => setSelectedColor(color)}
-              >
-                {color}
-              </button>
-            ))}
-          </div>
-        </div>
+          <textarea
+            placeholder="Write your review..."
+            value={reviewComment}
+            onChange={(e) => setReviewComment(e.target.value)}
+          />
 
-        {selectedVariant && (
-          <p
-            className={
-              selectedVariant.stock <= 5
-                ? "low-stock"
-                : "in-stock"
-            }
+          <button
+            onClick={submitReview}
+            className="premium-review-btn"
           >
-            {selectedVariant.stock > 0
-              ? `Only ${selectedVariant.stock} left`
-              : "Out of stock"}
-          </p>
-        )}
-
-        <p className="details-description">
-          {product.description}
-        </p>
+            Submit Review
+          </button>
+        </div>
 
         <div className="cart-buttons">
-          {inCart ? (
-            <button
-              className="go-cart-btn"
-              onClick={() => navigate("/cart")}
-            >
-              🛒 Go to Cart
-            </button>
-          ) : (
-            <button
-              className="add-cart-btn"
-              onClick={handleAddToCart}
-              disabled={
-                adding ||
-                !selectedVariant ||
-                selectedVariant.stock === 0
-              }
-            >
-              {adding ? "Adding..." : "Add to Cart"}
-            </button>
-          )}
+          <button
+            className="add-cart-btn"
+            onClick={handleAddToCart}
+          >
+            Add to Cart
+          </button>
         </div>
       </div>
-
-      {showLoginModal && (
-        <div className="modal-overlay">
-          <div className="login-modal">
-            <h3>Login Required</h3>
-            <p>Please login to add items to cart.</p>
-            <div className="modal-actions">
-              <button onClick={() => setShowLoginModal(false)}>
-                Cancel
-              </button>
-              <button onClick={() => navigate("/login")}>
-                Login
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

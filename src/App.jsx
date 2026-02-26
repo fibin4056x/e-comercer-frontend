@@ -1,6 +1,6 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect } from "react";
 import { Route, Routes, BrowserRouter } from "react-router-dom";
-import Index from "./home"; 
+import Index from "./home";
 import Login from "./registrationpage/loginpages/login";
 import Registration from "./registrationpage/Registration";
 import Home from "./home/Home";
@@ -21,9 +21,26 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Context } from "./registrationpage/loginpages/Logincontext";
 import Userdetails from "./home/content/Userdetails/Userdetails";
+import AdminProducts from "./admin/addminproduct/adminproduct";
+import UpdateProduct from "./admin/addproduct/UpdateProduct";
+import { request } from "./services/api";
 
 function App() {
-  const { user } = useContext(Context);
+  const { user, setUser } = useContext(Context);
+
+  // 🔐 VERIFY TOKEN WHEN APP LOADS
+  useEffect(() => {
+    const verifyUser = async () => {
+      try {
+        const profile = await request("/auth/profile", "GET");
+        setUser(profile);
+      } catch {
+        setUser(null);
+      }
+    };
+
+    verifyUser();
+  }, [setUser]);
 
   return (
     <BrowserRouter>
@@ -37,8 +54,11 @@ function App() {
           <Route path="checkout" element={<Checkout />} />
           <Route path="order" element={<Order />} />
           <Route path="wishlist" element={<Wishlist />} />
-           <Route path="userdetails"element={<Userdetails/>}/>
-       
+          <Route path="userdetails" element={<Userdetails />} />
+
+          <Route path="/admin/products" element={<AdminProducts />} />
+          <Route path="/admin/update/:id" element={<UpdateProduct />} />
+
           <Route
             path="admin"
             element={
@@ -47,6 +67,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="addproduct"
             element={
@@ -55,6 +76,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="removeproduct"
             element={
@@ -63,6 +85,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="users"
             element={
@@ -71,6 +94,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
           <Route
             path="orderpage"
             element={
@@ -81,7 +105,6 @@ function App() {
           />
         </Route>
 
-       
         <Route path="/login" element={<Login />} />
         <Route path="/registration" element={<Registration />} />
       </Routes>

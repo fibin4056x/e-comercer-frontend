@@ -8,7 +8,7 @@ export default function RemoveProduct() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-  const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+  
 
   useEffect(() => {
     fetchProducts();
@@ -36,13 +36,11 @@ export default function RemoveProduct() {
 
     try {
       await axios.delete(
-        `http://localhost:5000/api/products/${selectedProduct._id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${userInfo.token}`,
-          },
-        }
-      );
+  `http://localhost:5000/api/products/${selectedProduct._id}`,
+  {
+    withCredentials: true,  // 🔥 this is what you need
+  }
+);
 
       toast.success(`"${selectedProduct.name}" deleted`);
       setProducts(

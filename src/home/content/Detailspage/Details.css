@@ -266,3 +266,90 @@
   color: #2ecc71;
   font-weight: 600;
 }
+/* ================= PREMIUM REVIEW BUTTON ================= */
+
+.premium-review-btn {
+  margin-top: 15px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  color: white;
+  background: linear-gradient(135deg, #000000, #333333);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.premium-review-btn:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #111111, #555555);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.premium-review-btn:active {
+  transform: scale(0.98);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.premium-review-btn:disabled {
+  background: #999;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+.review-section {
+  margin-top: 30px;
+  padding: 20px;
+  background: #111;
+  border-radius: 12px;
+  border: 1px solid #222;
+}
+
+.premium-review-btn {
+  width: 100%;
+  padding: 10px;
+  background: linear-gradient(135deg, #f5a623, #ff7a00);
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.premium-review-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 122, 0, 0.4);
+}
+
+.review-item {
+  background: #151515;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 15px;
+}
+
+.review-actions {
+  margin-top: 10px;
+  display: flex;
+  gap: 10px;
+}
+
+.edit-review-btn,
+.delete-review-btn {
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+}
+
+.edit-review-btn {
+  background: #333;
+  color: white;
+}
+
+.delete-review-btn {
+  background: #660000;
+  color: #ff4d4d;
+}
