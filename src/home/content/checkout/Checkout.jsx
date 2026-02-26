@@ -11,6 +11,8 @@ export default function Checkout() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
+  const BASE_URL = "http://localhost:5000"; // 🔥 Added for images
+
   const items = Array.isArray(cart?.items) ? cart.items : [];
 
   const total = useMemo(() => {
@@ -31,7 +33,7 @@ export default function Checkout() {
   } = useForm();
 
   const onSubmit = async (data) => {
-    if (!user?.token) {
+    if (!user) {
       toast.error("Please login first");
       navigate("/login");
       return;
@@ -54,15 +56,9 @@ export default function Checkout() {
         },
       };
 
-      await request(
-        "/orders",
-        "POST",
-        orderData,
-        user.token
-      );
+      const response = await request("/orders", "POST", orderData);
 
       toast.success("Order placed successfully");
-
       setCart({ items: [], total: 0 });
       reset();
       navigate("/");
@@ -80,103 +76,100 @@ export default function Checkout() {
     return <h2 className="checkout-msg">Cart is empty</h2>;
 
   return (
-    <div className="checkout-container">
-      <div className="checkout-left">
-        <h2>Shipping Details</h2>
+    <div className="premium-checkout">
+      <div className="checkout-card">
+        <div className="checkout-left">
+          <h2>Shipping Details</h2>
 
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+          <form onSubmit={handleSubmit(onSubmit)} noValidate>
 
-          {/* ADDRESS */}
-          <input
-            placeholder="Address"
-            {...register("address", {
-              required: "Address is required",
-              minLength: {
-                value: 5,
-                message: "Address must be at least 5 characters",
-              },
-              validate: (value) =>
-                value.trim().length > 0 ||
-                "Address cannot be empty",
-            })}
-          />
-          {errors.address && <p className="error">{errors.address.message}</p>}
+            <input
+              placeholder="Address"
+              {...register("address", { required: true })}
+            />
+            {errors.address && (
+              <p className="error">Address required</p>
+            )}
 
-          {/* CITY */}
-          <input
-            placeholder="City"
-            {...register("city", {
-              required: "City is required",
-              minLength: {
-                value: 2,
-                message: "City must be at least 2 characters",
-              },
-              pattern: {
-                value: /^[A-Za-z\s]+$/,
-                message: "City must contain only letters",
-              },
-            })}
-          />
-          {errors.city && <p className="error">{errors.city.message}</p>}
+            <input
+              placeholder="City"
+              {...register("city", { required: true })}
+            />
+            {errors.city && (
+              <p className="error">City required</p>
+            )}
 
-          {/* POSTAL CODE */}
-          <input
-            placeholder="Postal Code"
-            {...register("postalCode", {
-              required: "Postal code is required",
-              pattern: {
-                value: /^[0-9]{6}$/,
-                message: "Postal code must be 6 digits",
-              },
-            })}
-          />
-          {errors.postalCode && (
-            <p className="error">{errors.postalCode.message}</p>
-          )}
+            <input
+              placeholder="Postal Code"
+              {...register("postalCode", { required: true })}
+            />
+            {errors.postalCode && (
+              <p className="error">Postal code required</p>
+            )}
 
-          {/* COUNTRY (Dropdown – Recommended) */}
-          <select
-            {...register("country", {
-              required: "Please select a country",
-            })}
-          >
-            <option value="">Select Country</option>
-            <option value="India">India</option>
-            <option value="USA">USA</option>
-            <option value="UK">UK</option>
-            <option value="Canada">Canada</option>
-          </select>
-          {errors.country && (
-            <p className="error">{errors.country.message}</p>
-          )}
+            <select
+              {...register("country", { required: true })}
+            >
+              <option value="">Select Country</option>
+              <option value="India">India</option>
+              <option value="USA">USA</option>
+              <option value="UK">UK</option>
+              <option value="Canada">Canada</option>
+            </select>
 
-          <button type="submit" disabled={loading}>
-            {loading ? "Placing Order..." : "Place Order"}
-          </button>
-        </form>
-      </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="primary-btn"
+            >
+              {loading ? "Processing..." : "Place Order"}
+            </button>
 
-      <div className="checkout-right">
-        <h2>Order Summary</h2>
+          </form>
+        </div>
 
-        {items.map((item, index) => (
-          <div key={index} className="summary-row">
-            <span>
-              {item.product.name} × {item.quantity}
-            </span>
-            <span>
-              ₹
-              {(item.product.price *
-                item.quantity).toFixed(2)}
-            </span>
+        <div className="checkout-right">
+          <h2>Order Summary</h2>
+
+          {items.map((item, index) => (
+            <div key={index} className="summary-item">
+
+              <img
+                src={
+                  item.product.images?.[0]
+                    ? `${BASE_URL}${item.product.images[0]}`
+                    : "/placeholder.png"
+                }
+                alt={item.product.name}
+                className="summary-img"
+              />
+
+              <div className="summary-info">
+                <p className="product-name">
+                  {item.product.name}
+                </p>
+                <p className="variant">
+                  {item.size} • {item.color}
+                </p>
+                <p>Qty: {item.quantity}</p>
+              </div>
+
+              <div className="summary-price">
+                ₹{(
+                  item.product.price *
+                  item.quantity
+                ).toFixed(2)}
+              </div>
+
+            </div>
+          ))}
+
+          <hr />
+
+          <div className="summary-total">
+            <strong>Total</strong>
+            <strong>₹{total.toFixed(2)}</strong>
           </div>
-        ))}
-
-        <hr />
-
-        <div className="summary-total">
-          <strong>Total</strong>
-          <strong>₹{total.toFixed(2)}</strong>
         </div>
       </div>
     </div>

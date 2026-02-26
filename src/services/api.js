@@ -4,6 +4,7 @@ export const request = async (url, method = "GET", body = null, token = null) =>
     headers: {
       "Content-Type": "application/json",
     },
+    credentials: "include",   // 🔥 REQUIRED FOR COOKIES
   };
 
   if (body) {

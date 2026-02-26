@@ -15,6 +15,9 @@ export default function Registration() {
     confirmPassword: "",
   });
 
+  const [otp, setOtp] = useState("");
+  const [showOtpInput, setShowOtpInput] = useState(false);
+
   const [show, setShow] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -23,6 +26,7 @@ export default function Registration() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
+  // REGISTER
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -53,14 +57,39 @@ export default function Registration() {
         password,
       });
 
-      toast.success("Account created successfully 🎉");
+      toast.success("Registered! Enter OTP sent to your email");
+
+      setShowOtpInput(true);   // show OTP input
+    } catch (err) {
+      console.log("REGISTER ERROR:", err);
+      toast.error(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // VERIFY OTP
+  const handleVerifyOtp = async () => {
+    if (!otp) {
+      return toast.warning("Enter OTP");
+    }
+
+    try {
+      setLoading(true);
+
+          await request("/auth/verify-register", "POST", {
+        email: form.email,
+        otp,
+      });
+
+      toast.success("Account activated successfully 🎉");
 
       setTimeout(() => {
         navigate("/login");
       }, 1500);
 
     } catch (err) {
-      toast.error(err.message || "Registration failed");
+      toast.error(err.message);
     } finally {
       setLoading(false);
     }
@@ -78,6 +107,7 @@ export default function Registration() {
             placeholder="Username"
             value={form.username}
             onChange={handleChange}
+            disabled={showOtpInput}
           />
         </div>
 
@@ -88,6 +118,7 @@ export default function Registration() {
             placeholder="Email Address"
             value={form.email}
             onChange={handleChange}
+            disabled={showOtpInput}
           />
         </div>
 
@@ -98,6 +129,7 @@ export default function Registration() {
             placeholder="Password"
             value={form.password}
             onChange={handleChange}
+            disabled={showOtpInput}
           />
           <button type="button" onClick={() => setShow(!show)}>
             {show ? <Eye size={18} /> : <EyeOff size={18} />}
@@ -111,15 +143,38 @@ export default function Registration() {
             placeholder="Confirm Password"
             value={form.confirmPassword}
             onChange={handleChange}
+            disabled={showOtpInput}
           />
           <button type="button" onClick={() => setShowConfirm(!showConfirm)}>
             {showConfirm ? <Eye size={18} /> : <EyeOff size={18} />}
           </button>
         </div>
 
-        <button type="submit" className="submit-btn" disabled={loading}>
-          {loading ? "Creating Account..." : "Register"}
-        </button>
+        {/* OTP INPUT */}
+        {showOtpInput && (
+          <div className="input-group">
+            <input
+              type="text"
+              placeholder="Enter OTP"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+            />
+            <button
+              type="button"
+              className="submit-btn"
+              onClick={handleVerifyOtp}
+              disabled={loading}
+            >
+              Verify OTP
+            </button>
+          </div>
+        )}
+
+        {!showOtpInput && (
+          <button type="submit" className="submit-btn" disabled={loading}>
+            {loading ? "Creating Account..." : "Register"}
+          </button>
+        )}
 
         <div className="bottom-login">
           <p>Already have an account?</p>

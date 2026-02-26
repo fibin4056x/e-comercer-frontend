@@ -9,42 +9,55 @@ function Logincontext({ children }) {
   const [loadingUser, setLoadingUser] = useState(true);
 
   /* =========================
-     RESTORE USER FROM LOCALSTORAGE
+     RESTORE USER FROM COOKIE
+     (No token needed)
   ========================= */
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-
-    if (storedUser) {
+    const restoreUser = async () => {
       try {
-        const parsedUser = JSON.parse(storedUser);
+        console.log("🔄 Checking existing session...");
 
-        if (parsedUser?.token) {
-          setUser(parsedUser);
-        } else {
-          localStorage.removeItem("user");
-        }
-      } catch {
+        const profile = await request(
+          "/auth/profile",
+          "GET",
+          null,
+          true
+        );
+
+        console.log("✅ Session restored:", profile);
+
+        setUser(profile);
+        localStorage.setItem("user", JSON.stringify(profile));
+
+      } catch (error) {
+        console.log("⚠ No active session");
+        setUser(null);
         localStorage.removeItem("user");
+      } finally {
+        setLoadingUser(false);
       }
-    }
+    };
 
-    setLoadingUser(false);
+    restoreUser();
   }, []);
 
   /* =========================
      FETCH CART WHEN USER CHANGES
+     (Cookie-based)
   ========================= */
   useEffect(() => {
     const fetchCart = async () => {
-      if (!user?.token) {
+      if (!user) {
         setCart({ items: [] });
         return;
       }
 
       try {
-        const data = await request("/cart", "GET", null, user.token);
+        console.log("🛒 Fetching cart...");
+        const data = await request("/cart", "GET", null, true);
         setCart(data || { items: [] });
-      } catch {
+      } catch (error) {
+        console.error("❌ Cart fetch error:", error);
         setCart({ items: [] });
       }
     };
@@ -55,10 +68,20 @@ function Logincontext({ children }) {
   /* =========================
      LOGOUT
   ========================= */
-  const logout = () => {
-    setUser(null);
-    setCart({ items: [] });
-    localStorage.removeItem("user");
+  const logout = async () => {
+    try {
+      console.log("🚪 Logging out...");
+
+      await request("/auth/logout", "POST", null, true);
+
+      setUser(null);
+      setCart({ items: [] });
+      localStorage.removeItem("user");
+
+      console.log("✅ Logout successful");
+    } catch (error) {
+      console.error("❌ Logout error:", error);
+    }
   };
 
   return (

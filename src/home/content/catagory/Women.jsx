@@ -13,6 +13,8 @@ export default function Women() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const BASE_URL = "http://localhost:5000"; // 🔥 Added
+
   const { user } = useContext(Logincontext);
   const {
     wishlist = [],
@@ -24,15 +26,10 @@ export default function Women() {
   useEffect(() => {
     const fetchWomen = async () => {
       try {
-        console.log("📦 Fetching WOMEN products...");
         setLoading(true);
-
         const products = await request("/products?category=women");
-
-        console.log("✅ WOMEN loaded:", products.length);
         setData(products || []);
       } catch (err) {
-        console.error("🔥 WOMEN fetch error:", err);
         setError("Failed to load women's products");
       } finally {
         setLoading(false);
@@ -43,7 +40,7 @@ export default function Women() {
   }, []);
 
   useEffect(() => {
-    if (user?.token) {
+    if (user) {
       fetchWishlist();
     }
   }, [user, fetchWishlist]);
@@ -82,7 +79,6 @@ export default function Women() {
         await addToWishlist(product);
       }
     } catch (err) {
-      console.error("🔥 Wishlist error:", err);
       toast.error("Wishlist update failed");
     }
   };
@@ -132,7 +128,11 @@ export default function Women() {
               <Link to={`/product/${item._id}`}>
                 <div className="product-image-container">
                   <img
-                    src={item.images?.[0] || "placeholder.jpg"}
+                    src={
+                      item.images?.[0]
+                        ? `${BASE_URL}${item.images[0]}`
+                        : "placeholder.jpg"
+                    }
                     alt={item.name}
                     className="product-image"
                   />

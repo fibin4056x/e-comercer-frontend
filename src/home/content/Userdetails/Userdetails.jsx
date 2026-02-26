@@ -1,67 +1,91 @@
 import React, { useContext, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Context } from "../../../registrationpage/loginpages/Logincontext";
+import { request } from "../../../services/api";
 import "./Userdetails.css";
 
 function Userdetails() {
-  const { user, setuser } = useContext(Context); // logged-in user
+  const { user, setuser } = useContext(Context);
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
-  const handleLogout = () => {
-    setuser(null);
+ const handleLogout = async () => {
+  try {
+    await request("/auth/logout", "POST");
+
+    setUser(null);   // ✅ correct
     localStorage.removeItem("user");
+
     navigate("/login");
-  };
+
+  } catch (err) {
+    console.error("Logout failed:", err.message);
+  }
+};
+  if (!user) {
+    return (
+      <div className="userdetails-container empty-state">
+        <h2>No User Logged In</h2>
+        <Link to="/login" className="primary-btn">
+          Go to Login
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="userdetails-container">
-      {!user ? (
-        <p>No user logged in. Please <Link to="/login">login</Link>.</p>
-      ) : (
-        <>
-          <h2>My Profile</h2>
+      <div className="profile-card">
 
-          {/* Logout button */}
-          <button className="logout-btn" onClick={() => setShowLogoutModal(true)}>
-            Logout
-          </button>
-
-          {/* Link to Orders page */}
-          <Link to="/order">
-            <button className="order-btn">My Orders</button>
-          </Link>
-
-          <div className="user-item">
-            <strong>Name:</strong> {user.username} <br />
-            <strong>Email:</strong> {user.email} <br />
-            <strong>Role:</strong> {user.role || "User"}
+        <div className="profile-header">
+          <div className="avatar">
+            {user.username?.charAt(0).toUpperCase()}
           </div>
 
-          {/* Custom Logout Confirmation Modal */}
-          {showLogoutModal && (
-            <div className="modal-overlay">
-              <div className="logout-modal">
-                <h3>Confirm Logout</h3>
-                <p>Are you sure you want to logout?</p>
-                <div className="modal-actions">
-                  <button 
-                    className="cancel-btn" 
-                    onClick={() => setShowLogoutModal(false)}
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    className="confirm-btn" 
-                    onClick={handleLogout}
-                  >
-                    Logout
-                  </button>
-                </div>
-              </div>
+          <div className="profile-info">
+            <h2>{user.username}</h2>
+            <p>{user.email}</p>
+            <span className="role-badge">
+              {user.role || "User"}
+            </span>
+          </div>
+        </div>
+
+        <div className="profile-actions">
+          <Link to="/order" className="secondary-btn">
+            My Orders
+          </Link>
+
+          <button
+            className="danger-btn"
+            onClick={() => setShowLogoutModal(true)}
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+
+      {showLogoutModal && (
+        <div className="modal-overlay">
+          <div className="logout-modal">
+            <h3>Confirm Logout</h3>
+            <p>You will be signed out from this device.</p>
+            <div className="modal-actions">
+              <button
+                className="cancel-btn"
+                onClick={() => setShowLogoutModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="confirm-btn"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
             </div>
-          )}
-        </>
+          </div>
+        </div>
       )}
     </div>
   );

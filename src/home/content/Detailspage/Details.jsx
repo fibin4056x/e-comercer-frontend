@@ -19,6 +19,8 @@ function Details() {
   const [selectedColor, setSelectedColor] = useState("");
   const [showLoginModal, setShowLoginModal] = useState(false);
 
+  const BASE_URL = "http://localhost:5000";
+
   /* ================= FETCH PRODUCT ================= */
 
   useEffect(() => {
@@ -27,7 +29,12 @@ function Details() {
         setLoading(true);
         const data = await request(`/products/${id}`);
         setProduct(data);
-        setMainImage(data.images?.[0] || "/placeholder.png");
+
+        setMainImage(
+          data.images?.[0]
+            ? `${BASE_URL}${data.images[0]}`
+            : "/placeholder.png"
+        );
       } catch (err) {
         toast.error("Failed to load product");
       } finally {
@@ -61,7 +68,6 @@ function Details() {
       .map(v => v.color);
   }, [product, selectedSize]);
 
-  /* AUTO SELECT FIRST COLOR WHEN SIZE CHANGES */
   useEffect(() => {
     if (colors.length > 0) {
       setSelectedColor(colors[0]);
@@ -74,8 +80,6 @@ function Details() {
       v => v.size === selectedSize && v.color === selectedColor
     );
   }, [product, selectedSize, selectedColor]);
-
-  /* ================= SAFE INCART CHECK ================= */
 
   const inCart = useMemo(() => {
     if (!cart?.items || !product) return false;
@@ -97,7 +101,7 @@ function Details() {
   /* ================= ADD TO CART ================= */
 
   const handleAddToCart = async () => {
-    if (!user?.token) {
+    if (!user) {
       setShowLoginModal(true);
       return;
     }
@@ -123,8 +127,7 @@ function Details() {
           quantity: 1,
           size: selectedSize,
           color: selectedColor,
-        },
-        user.token
+        }
       );
 
       setCart(updatedCart);
@@ -136,19 +139,24 @@ function Details() {
     }
   };
 
-  /* ================= LOADING ================= */
-
   if (loading)
     return <h2 style={{ textAlign: "center" }}>Loading...</h2>;
 
   if (!product)
     return <h2 style={{ textAlign: "center" }}>Product not found</h2>;
 
+  const renderStars = (rating = 0) => {
+  return [...Array(5)].map((_, i) => (
+    <span key={i}>
+      {i < Math.round(rating) ? "★" : "☆"}
+    </span>
+  ));
+};
+
   /* ================= UI ================= */
 
   return (
     <div className="unique-details">
-      {/* LEFT SIDE */}
       <div className="details-left">
         <img
           src={mainImage}
@@ -158,22 +166,24 @@ function Details() {
 
         {product.images?.length > 1 && (
           <div className="details-thumbnails">
-            {product.images.map((img, index) => (
-              <img
-                key={index}
-                src={img}
-                alt={`thumb-${index}`}
-                className={`details-thumb ${
-                  mainImage === img ? "active-thumb" : ""
-                }`}
-                onClick={() => setMainImage(img)}
-              />
-            ))}
+            {product.images.map((img, index) => {
+              const fullImg = `${BASE_URL}${img}`;
+              return (
+                <img
+                  key={index}
+                  src={fullImg}
+                  alt={`thumb-${index}`}
+                  className={`details-thumb ${
+                    mainImage === fullImg ? "active-thumb" : ""
+                  }`}
+                  onClick={() => setMainImage(fullImg)}
+                />
+              );
+            })}
           </div>
         )}
       </div>
 
-      {/* RIGHT SIDE */}
       <div className="details-right">
         <h1 className="details-title">{product.name}</h1>
         <p className="details-brand">{product.brand}</p>
@@ -194,11 +204,14 @@ function Details() {
           )}
         </div>
 
-        <p className="rating">
-          ⭐ {product.rating} ({product.reviews} reviews)
-        </p>
-
-        {/* SIZE */}
+    <div className="rating">
+  <div className="stars">
+    {renderStars(product.rating)}
+  </div>
+  <span className="rating-text">
+    {product.rating?.toFixed(1)} ({product.reviews} reviews)
+  </span>
+</div>
         <div className="variant-section">
           <p>Select Size:</p>
           <div className="variant-options">
@@ -216,7 +229,6 @@ function Details() {
           </div>
         </div>
 
-        {/* COLOR */}
         <div className="variant-section">
           <p>Select Color:</p>
           <div className="variant-options">
@@ -234,7 +246,6 @@ function Details() {
           </div>
         </div>
 
-        {/* STOCK */}
         {selectedVariant && (
           <p
             className={
@@ -277,7 +288,6 @@ function Details() {
         </div>
       </div>
 
-      {/* LOGIN MODAL */}
       {showLoginModal && (
         <div className="modal-overlay">
           <div className="login-modal">

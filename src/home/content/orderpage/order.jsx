@@ -1,31 +1,40 @@
-import React, { useContext, useEffect, useState } from "react";
-import { OrderContext } from "./ordercontext";
-import "./order.css";
-import { Context } from "../../../registrationpage/loginpages/Logincontext";
-import axios from "axios";
+import React, { useEffect, useState } from "react";
+import { request } from "../../../services/api";
 import { toast } from "react-toastify";
+import "./order.css";
 
 export default function Orders() {
-  const { user } = useContext(Context);
-  const { orders, setOrders, cancelOrderById, cancelAllOrders } =
-    useContext(OrderContext);
-
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [countdowns, setCountdowns] = useState({});
-  const [confirmModal, setConfirmModal] = useState({
-    visible: false,
-    type: "",
-    orderId: null,
-  });
+
+  /* ================= FETCH ORDERS ================= */
 
   useEffect(() => {
-    console.log("USER:", user);
-    console.log("ORDERS:", orders);
-  }, [user, orders]);
+    const fetchOrders = async () => {
+      try {
+        console.log("📥 Fetching orders...");
+
+        const data = await request("/orders");
+
+        console.log("📦 Orders received:", data);
+
+        setOrders(data);
+      } catch (err) {
+        console.error("❌ Orders fetch error:", err);
+        toast.error(err.message || "Failed to load orders");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, []);
+
+  /* ================= DELIVERY COUNTDOWN ================= */
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (!orders) return;
-
       const newCountdowns = {};
 
       orders.forEach((order) => {
@@ -40,9 +49,11 @@ export default function Orders() {
               ? `${mins.toString().padStart(2, "0")}:${secs
                   .toString()
                   .padStart(2, "0")}`
-              : "00:00";
+              : "Delivered";
 
           if (diff <= 0 && order.status !== "Delivered") {
+            console.log("🚚 Auto marking delivered:", order._id);
+
             setOrders((prev) =>
               prev.map((o) =>
                 o._id === order._id
@@ -50,15 +61,6 @@ export default function Orders() {
                   : o
               )
             );
-
-            axios
-              .patch(
-                `http://localhost:5000/api/orders/${order._id}`,
-                { status: "Delivered" }
-              )
-              .catch(console.error);
-
-            toast.info(`Order ${order._id} delivered!`);
           }
         }
       });
@@ -67,38 +69,89 @@ export default function Orders() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [orders, setOrders]);
+  }, [orders]);
 
-  if (!user) return <h2>Please login to see your orders</h2>;
+  /* ================= LOADING / EMPTY ================= */
+
+  if (loading)
+    return <h2 className="orders-message">Loading orders...</h2>;
+
   if (!orders || orders.length === 0)
-    return <p className="no-orders">No orders found</p>;
+    return <h2 className="orders-message">No orders found</h2>;
+
+  /* ================= UI ================= */
 
   return (
-    <div className="orders-wrapper">
+    <div className="premium-orders">
+      <h1 className="orders-title">My Orders</h1>
+
       {orders.map((order) => (
         <div key={order._id} className="order-card">
+
           <div className="order-header">
-            <h2>Order #{order._id.slice(-6)}</h2>
+            <div>
+              <p className="order-id">
+                Order #{order._id.slice(-6)}
+              </p>
+              <p className="order-date">
+                {new Date(order.createdAt).toLocaleString()}
+              </p>
+            </div>
+
+            <div className={`status-badge ${order.status?.toLowerCase()}`} >
+              {order.status || "Pending"}
+            </div>
           </div>
 
-          <p><strong>Address:</strong> {order.shippingAddress?.address}</p>
-          <p><strong>City:</strong> {order.shippingAddress?.city}</p>
-          <p><strong>Country:</strong> {order.shippingAddress?.country}</p>
+          <div className="order-items">
+            {order.orderItems?.map((item, index) => (
+              <div key={index} className="order-item">
 
-          <h3>Items</h3>
-          {order.orderItems?.map((item, index) => (
-            <div key={index} className="order-item">
-              <p>{item.name}</p>
-              <p>Qty: {item.quantity}</p>
-              <p>₹ {item.price}</p>
+                <img
+                  src={item.image || "/placeholder.png"}
+                  alt={item.name}
+                  className="order-thumb"
+                />
+
+                <div className="order-item-info">
+                  <p className="item-name">{item.name}</p>
+                  <p className="item-variant">
+                    {item.size} • {item.color}
+                  </p>
+                  <p className="item-qty">
+                    Qty: {item.quantity}
+                  </p>
+                </div>
+
+                <div className="order-price">
+                  ₹{(item.price * item.quantity).toFixed(2)}
+                </div>
+
+              </div>
+            ))}
+          </div>
+
+          <div className="order-footer">
+            <div className="shipping-info">
+              <p><strong>Address:</strong> {order.shippingAddress?.address}</p>
+              <p><strong>City:</strong> {order.shippingAddress?.city}</p>
+              <p><strong>Country:</strong> {order.shippingAddress?.country}</p>
             </div>
-          ))}
 
-          <h3>Total: ₹ {order.totalPrice}</h3>
+            <div className="order-summary">
+              <p className="total-label">Total</p>
+              <p className="total-price">
+                ₹{order.totalPrice?.toFixed(2)}
+              </p>
 
-          <p className={`status ${order.status?.toLowerCase()}`}>
-            {order.status || "Pending"}
-          </p>
+              {countdowns[order._id] && (
+                <p className="delivery-timer">
+                  Delivery in: {countdowns[order._id]}
+                </p>
+              )}
+            </div>
+          </div>
+
         </div>
       ))}
     </div>

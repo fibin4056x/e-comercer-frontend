@@ -8,6 +8,8 @@ import { request } from "../../../services/api";
 export default function Cart() {
   const { cart, user, setCart } = useContext(Context);
 
+  const BASE_URL = "http://localhost:5000"; // 🔥 Added
+
   const items = Array.isArray(cart?.items) ? cart.items : [];
 
   const updateQuantity = async (item, quantity) => {
@@ -25,8 +27,7 @@ export default function Cart() {
           quantity,
           size: item.size,
           color: item.color,
-        },
-        user.token
+        }
       );
 
       setCart(updated);
@@ -47,9 +48,7 @@ export default function Cart() {
 
       const updated = await request(
         `/cart/${productId}/${encodedSize}/${encodedColor}`,
-        "DELETE",
-        null,
-        user.token
+        "DELETE"
       );
 
       setCart(updated);
@@ -92,8 +91,9 @@ export default function Cart() {
             >
               <img
                 src={
-                  item.product.images?.[0] ||
-                  "/placeholder.png"
+                  item.product.images?.[0]
+                    ? `${BASE_URL}${item.product.images[0]}`
+                    : "/placeholder.png"
                 }
                 alt={item.product.name}
                 className="cart-img"

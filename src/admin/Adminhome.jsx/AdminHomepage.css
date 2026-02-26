@@ -1,53 +1,93 @@
-.admin-home {
-  max-width: 1100px;
-  margin: 40px auto;
+/* Scope everything inside admin-container */
+.admin-container * {
+  box-sizing: border-box;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.admin-container {
+  display: flex;
+  height: 100vh;
+  background: #f4f6f9;
+}
+
+/* Sidebar */
+.admin-sidebar {
+  width: 250px;
+  background: #111827;
+  color: white;
   padding: 20px;
+}
+
+.admin-sidebar .logo {
+  font-size: 22px;
+  margin-bottom: 40px;
+  font-weight: bold;
   text-align: center;
 }
 
-.admin-title {
-  font-size: 32px;
-  font-weight: bold;
+.admin-sidebar .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  color: #d1d5db;
+  text-decoration: none;
+  border-radius: 8px;
   margin-bottom: 10px;
-  color: #222;
+  transition: 0.3s;
 }
 
-.admin-subtitle {
-  font-size: 18px;
+.admin-sidebar .nav-item:hover {
+  background: #1f2937;
+  color: white;
+}
+
+/* Main */
+.admin-main {
+  flex: 1;
+  padding: 40px;
+}
+
+.admin-header h1 {
+  font-size: 28px;
+  margin-bottom: 5px;
+}
+
+.admin-header p {
+  color: #6b7280;
   margin-bottom: 30px;
-  color: #555;
 }
 
-.admin-actions {
+/* Stats Cards */
+.stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 20px;
 }
 
-.admin-card {
-  display: block;
-  background: #fff;
-  border: 1px solid #eee;
-  border-radius: 12px;
-  padding: 20px;
-  text-decoration: none;
-  color: #333;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
-  transition: all 0.3s ease;
+.stat-card {
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+  transition: 0.3s;
 }
 
-.admin-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+.stat-card:hover {
+  transform: translateY(-5px);
 }
 
-.admin-card h2 {
-  font-size: 20px;
-  margin-bottom: 10px;
-  color: #111;
+.stat-icon {
+  font-size: 30px;
+  margin-bottom: 15px;
+  color: #3b82f6;
 }
 
-.admin-card p {
-  font-size: 14px;
-  color: #666;
+.stat-card h3 {
+  font-size: 24px;
+  margin-bottom: 5px;
+}
+
+.stat-card p {
+  color: #6b7280;
 }

@@ -18,31 +18,62 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!email || !password) {
+    /* =========================
+       BASIC VALIDATION
+    ========================= */
+    if (!email.trim() || !password.trim()) {
       toast.warning("Please fill in all fields");
+      return;
+    }
+
+    if (!email.includes("@")) {
+      toast.warning("Enter a valid email");
       return;
     }
 
     try {
       setLoading(true);
+      console.log("🔐 Attempting login for:", email);
 
-      const data = await request("/auth/login", "POST", {
-        email,
-        password,
-      });
+      const data = await request(
+        "/auth/login",
+        "POST",
+        { email, password },
+        true // withCredentials enabled
+      );
 
-      // Make sure backend returns token
-      if (!data?.token) {
-        throw new Error("Invalid login response");
-      }
+      console.log("✅ Login success response:", data);
 
-      localStorage.setItem("user", JSON.stringify(data));
-      setUser(data);
+      /* =========================
+         GET PROFILE AFTER LOGIN
+         (since cookie is now set)
+      ========================= */
+      const profile = await request(
+        "/auth/profile",
+        "GET",
+        null,
+        true
+      );
+
+      console.log("👤 Profile fetched:", profile);
+
+      localStorage.setItem("user", JSON.stringify(profile));
+      setUser(profile);
 
       toast.success("Login successful!");
       navigate("/");
+
     } catch (err) {
-      toast.error(err.message || "Invalid credentials");
+      console.error("❌ Login Error:", err);
+
+      if (err.response) {
+        toast.error(err.response.data?.message || "Invalid credentials");
+      } else if (err.message) {
+        toast.error(err.message);
+      } else {
+        toast.error("Login failed");
+      }
+
     } finally {
       setLoading(false);
     }

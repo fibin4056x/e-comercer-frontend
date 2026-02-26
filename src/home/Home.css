@@ -142,10 +142,10 @@ body::after {
 
 /* --- Product Card --- */
 .product-card {
-  background: #1f1f1f;
+  background: #1f1f1f !important;
   border-radius: 20px;
   overflow: hidden;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3) !important;
   transition: transform 0.35s ease, box-shadow 0.35s ease, filter 0.35s ease;
   position: relative;
   z-index: 1;

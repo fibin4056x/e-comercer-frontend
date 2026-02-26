@@ -14,7 +14,9 @@ export default function OrderProvider({ children }) {
 
   useEffect(() => {
     const fetchOrders = async () => {
-      if (!user?.token) {
+
+      if (!user) {
+        console.log("⚠ No user found. Clearing orders.");
         setOrders([]);
         return;
       }
@@ -22,21 +24,28 @@ export default function OrderProvider({ children }) {
       try {
         setLoading(true);
 
+        console.log("📥 Fetching orders (cookie-based)...");
+
         const response = await axios.get(
-          `${API}/myorders`,
+          API,
           {
-            headers: {
-              Authorization: `Bearer ${user.token}`,
-            },
+            withCredentials: true, // 🔥 REQUIRED FOR COOKIE AUTH
           }
         );
 
-        console.log("Fetched Orders:", response.data);
+        console.log("📦 Orders response:", response.data);
 
         setOrders(response.data || []);
+
       } catch (error) {
-        console.error("Error fetching orders:", error);
-        toast.error("Failed to fetch orders");
+        console.error("❌ Error fetching orders:", error.response?.data || error);
+
+        if (error.response?.status === 401) {
+          toast.error("Session expired. Please login again.");
+        } else {
+          toast.error("Failed to fetch orders");
+        }
+
         setOrders([]);
       } finally {
         setLoading(false);
@@ -44,6 +53,7 @@ export default function OrderProvider({ children }) {
     };
 
     fetchOrders();
+
   }, [user]);
 
   return (

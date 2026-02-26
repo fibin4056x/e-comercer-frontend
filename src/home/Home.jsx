@@ -239,15 +239,16 @@ export default function Home() {
                 to={`/product/${item._id}`}
               >
                 <div className="product-image-container">
-                  <img
-                    src={
-                      item.images?.[0] ||
-                      "https://via.placeholder.com/200"
-                    }
-                    alt={item.name}
-                    className="product-image"
-                  />
-                </div>
+                                      <img
+                        src={
+                          item.images?.[0]
+                            ? `http://localhost:5000${item.images[0]}`
+                            : "https://via.placeholder.com/200"
+                        }
+                        alt={item.name}
+                        className="product-image"
+                      />
+                                      </div>
 
                 <h3 className="product-name">
                   {item.name}

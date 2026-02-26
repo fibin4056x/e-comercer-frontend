@@ -8,16 +8,20 @@ export default function RemoveProduct() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
+  const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+
   useEffect(() => {
     fetchProducts();
   }, []);
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get("http://localhost:3000/products");
+      const res = await axios.get(
+        "http://localhost:5000/api/products"
+      );
       setProducts(res.data);
     } catch (err) {
-      console.error(err);
+      console.error("Fetch error:", err);
       toast.error("Failed to fetch products");
     }
   };
@@ -31,14 +35,27 @@ export default function RemoveProduct() {
     if (!selectedProduct) return;
 
     try {
-      await axios.delete(`http://localhost:3000/products/${selectedProduct.id}`);
-      toast.success(`"${selectedProduct.name}" removed successfully`);
-      setProducts(products.filter((p) => p.id !== selectedProduct.id));
+      await axios.delete(
+        `http://localhost:5000/api/products/${selectedProduct._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${userInfo.token}`,
+          },
+        }
+      );
+
+      toast.success(`"${selectedProduct.name}" deleted`);
+      setProducts(
+        products.filter((p) => p._id !== selectedProduct._id)
+      );
       setConfirmOpen(false);
       setSelectedProduct(null);
+
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to remove product");
+      console.error("Delete error:", err);
+      toast.error(
+        err.response?.data?.message || "Delete failed"
+      );
     }
   };
 
@@ -48,36 +65,55 @@ export default function RemoveProduct() {
   };
 
   return (
-    <div className="remove-product">
-      <h2 className="remove-title">Remove Product</h2>
+    <div className="remove-container">
+      <h2>Manage Products</h2>
+
       {products.length === 0 ? (
-        <p className="no-products">No products available</p>
+        <p className="empty-text">No products available</p>
       ) : (
-        <ul className="product-list">
+        <div className="product-grid">
           {products.map((product) => (
-            <li key={product.id} className="product-item">
-              <span className="product-name">{product.name}</span>
-              <span className="product-price">₹{product.price}</span>
+            <div key={product._id} className="product-card">
+              <img
+                src={`http://localhost:5000${product.images?.[0]}`}
+                alt={product.name}
+              />
+              <h4>{product.name}</h4>
+              <p>₹{product.price}</p>
+
               <button
-                onClick={() => openConfirm(product)}
                 className="delete-btn"
+                onClick={() => openConfirm(product)}
               >
                 Delete
               </button>
-            </li>
+            </div>
           ))}
-        </ul>
+        </div>
       )}
 
-      {/* Modal style similar to navbar logout modal */}
       {confirmOpen && (
         <div className="modal-overlay">
-          <div className="logout-modal">
+          <div className="confirm-modal">
             <h3>Delete Product</h3>
-            <p>Are you sure you want to delete <strong>{selectedProduct.name}</strong>?</p>
+            <p>
+              Are you sure you want to delete
+              <strong> {selectedProduct.name}</strong>?
+            </p>
+
             <div className="modal-actions">
-              <button className="cancel-btn" onClick={handleCancel}>Cancel</button>
-              <button className="confirm-btn" onClick={handleDelete}>Delete</button>
+              <button
+                className="cancel-btn"
+                onClick={handleCancel}
+              >
+                Cancel
+              </button>
+              <button
+                className="confirm-btn"
+                onClick={handleDelete}
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>

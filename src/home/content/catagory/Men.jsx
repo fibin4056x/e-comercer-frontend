@@ -13,6 +13,8 @@ export default function Men() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  const BASE_URL = "http://localhost:5000"; // 🔥 Added
+
   const { user } = useContext(Logincontext);
   const {
     wishlist = [],
@@ -21,19 +23,13 @@ export default function Men() {
     fetchWishlist,
   } = useContext(WishlistContext);
 
-  /* ================= FETCH MEN PRODUCTS ================= */
   useEffect(() => {
     const fetchMen = async () => {
       try {
-        console.log("📦 Fetching MEN products...");
         setLoading(true);
-
         const products = await request("/products?category=men");
-
-        console.log("✅ MEN loaded:", products.length);
         setData(products || []);
       } catch (err) {
-        console.error("🔥 MEN fetch error:", err);
         setError("Failed to load men's products");
       } finally {
         setLoading(false);
@@ -43,14 +39,12 @@ export default function Men() {
     fetchMen();
   }, []);
 
-  /* ================= FETCH WISHLIST ================= */
   useEffect(() => {
-    if (user?.token) {
+    if (user) {
       fetchWishlist();
     }
   }, [user, fetchWishlist]);
 
-  /* ================= OPTIMIZED LOOKUP ================= */
   const wishlistIds = useMemo(
     () => new Set(wishlist.map((w) => w._id)),
     [wishlist]
@@ -58,7 +52,6 @@ export default function Men() {
 
   const isInWishlist = (id) => wishlistIds.has(id);
 
-  /* ================= FILTER + SORT ================= */
   const filteredProducts = useMemo(() => {
     let result = data.filter((p) =>
       p.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -73,7 +66,6 @@ export default function Men() {
     return result;
   }, [data, searchTerm, sortOption]);
 
-  /* ================= TOGGLE WISHLIST ================= */
   const toggleWishlist = async (product) => {
     if (!user) {
       toast.info("Please login first");
@@ -87,12 +79,10 @@ export default function Men() {
         await addToWishlist(product);
       }
     } catch (err) {
-      console.error("🔥 Wishlist error:", err);
       toast.error("Wishlist update failed");
     }
   };
 
-  /* ================= UI ================= */
   return (
     <div className="men-container">
       <h2 className="men-title">Men's Collection</h2>
@@ -138,7 +128,11 @@ export default function Men() {
               <Link to={`/product/${item._id}`}>
                 <div className="product-image-container">
                   <img
-                    src={item.images?.[0] || "placeholder.jpg"}
+                    src={
+                      item.images?.[0]
+                        ? `${BASE_URL}${item.images[0]}`
+                        : "placeholder.jpg"
+                    }
                     alt={item.name}
                     className="product-image"
                   />
