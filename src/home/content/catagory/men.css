@@ -1,31 +1,251 @@
+/* ======================================
+   MEN PAGE WRAPPER
+====================================== */
+
 .men-container {
-  width: 100%;
-  max-width: 1300px;
-  margin: auto;
-  padding: 60px 20px;
+  min-height: 100vh;
+  padding: 90px 16px 60px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(127,90,240,0.12), transparent 40%),
+    radial-gradient(circle at 80% 80%, rgba(44,182,125,0.12), transparent 40%);
 }
+
+/* ======================================
+   TITLE
+====================================== */
 
 .men-title {
-  font-size: 3rem;
-  font-weight: 800;
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 35px;
   text-align: center;
-  margin-bottom: 40px;
-  background: linear-gradient(135deg, #00c6ff, #0072ff);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
 }
 
+/* ======================================
+   SEARCH + SORT
+====================================== */
+
+.men-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 45px;
+}
+
+/* Search Wrapper */
+
+.search-wrapper {
+  position: relative;
+  width: 280px; /* medium size */
+}
+
+.search-wrapper input {
+  width: 100%;
+  padding: 8px 32px 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  color: #f1f5f9;
+  font-size: 0.85rem;
+  outline: none;
+  transition: 0.2s ease;
+}
+
+.search-wrapper input::placeholder {
+  color: #94a3b8;
+}
+
+.search-wrapper input:focus {
+  border-color: #6366f1;
+}
+
+/* Search Icon */
+
+.search-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.75rem;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+/* Sort Dropdown */
+
+.men-controls select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  color: #f1f5f9;
+  font-size: 0.85rem;
+  min-width: 150px;
+  outline: none;
+  cursor: pointer;
+}
+
+/* ======================================
+   PRODUCT GRID
+====================================== */
+
 .men-grid {
+  width: 100%;
+  max-width: 1200px;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 30px;
+  gap: 28px;
 }
+
+/* ======================================
+   PRODUCT CARD
+====================================== */
+ .product-card {
+  position: relative;
+  background: rgba(255,255,255,0.05);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.08);
+  transition: 0.3s ease;
+}
+.product-card:hover {
+  transform: translateY(-6px);
+}
+
+/* Image */
+
+.product-image-container {
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: 0.3s ease;
+}
+
+.product-card:hover .product-image {
+  transform: scale(1.04);
+}
+
+/* Text */
+
+.product-name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 12px 14px 4px;
+}
+
+.product-brand {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin: 0 14px 4px;
+}
+
+.product-price {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 14px 14px;
+  color: #22c55e;
+}
+
+/* ======================================
+   WISHLIST BUTTON
+====================================== */
+
+.wishlist-button {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.6);
+  color: #ff7eb3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.wishlist-button.active {
+  color: #ff4d8d;
+}
+
+/* ======================================
+   STATUS TEXT
+====================================== */
 
 .loading-text,
 .error-text,
 .no-products {
+  margin-top: 30px;
+  font-size: 0.95rem;
+  color: #94a3b8;
   text-align: center;
-  font-size: 1.2rem;
-  color: #bbb;
-  margin-top: 40px;
+}
+
+/* ======================================
+   RESPONSIVE
+====================================== */
+
+@media (max-width: 768px) {
+
+  .men-controls {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .search-wrapper {
+    width: 100%;
+    max-width: 320px;
+  }
+
+.men-grid {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+  .men-title {
+    font-size: 1.8rem;
+  }
+}
+.search-box {
+  position: relative;
+  width: 280px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 8px 32px 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  color: #f1f5f9;
+  font-size: 0.85rem;
+  outline: none;
+}
+
+.search-box input::placeholder {
+  color: #94a3b8;
+}
+
+.search-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.75rem;
+  color: #94a3b8;
+  pointer-events: none;
 }

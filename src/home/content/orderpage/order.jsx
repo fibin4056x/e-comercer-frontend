@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { request } from "../../../services/api";
+import { request, } from "../../../services/api";
 import { toast } from "react-toastify";
 import "./order.css";
 
@@ -7,19 +7,16 @@ export default function Orders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [countdowns, setCountdowns] = useState({});
-
+  const BASE_URL= "http://localhost:5000";
   /* ================= FETCH ORDERS ================= */
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         console.log("📥 Fetching orders...");
-
         const data = await request("/orders");
-
         console.log("📦 Orders received:", data);
-
-        setOrders(data);
+        setOrders(data || []);
       } catch (err) {
         console.error("❌ Orders fetch error:", err);
         toast.error(err.message || "Failed to load orders");
@@ -52,8 +49,6 @@ export default function Orders() {
               : "Delivered";
 
           if (diff <= 0 && order.status !== "Delivered") {
-            console.log("🚚 Auto marking delivered:", order._id);
-
             setOrders((prev) =>
               prev.map((o) =>
                 o._id === order._id
@@ -87,7 +82,6 @@ export default function Orders() {
 
       {orders.map((order) => (
         <div key={order._id} className="order-card">
-
           <div className="order-header">
             <div>
               <p className="order-id">
@@ -98,7 +92,7 @@ export default function Orders() {
               </p>
             </div>
 
-            <div className={`status-badge ${order.status?.toLowerCase()}`} >
+            <div className={`status-badge ${order.status?.toLowerCase()}`}>
               {order.status || "Pending"}
             </div>
           </div>
@@ -106,12 +100,15 @@ export default function Orders() {
           <div className="order-items">
             {order.orderItems?.map((item, index) => (
               <div key={index} className="order-item">
-
-                <img
-                  src={item.image || "/placeholder.png"}
-                  alt={item.name}
-                  className="order-thumb"
-                />
+               <img
+  src={
+    item.image
+      ? `${BASE_URL}${item.image}`
+      : "/placeholder.png"
+  }
+  alt={item.name}
+  className="order-thumb"
+/>
 
                 <div className="order-item-info">
                   <p className="item-name">{item.name}</p>
@@ -126,7 +123,6 @@ export default function Orders() {
                 <div className="order-price">
                   ₹{(item.price * item.quantity).toFixed(2)}
                 </div>
-
               </div>
             ))}
           </div>

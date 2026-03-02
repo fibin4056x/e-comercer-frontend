@@ -84,67 +84,78 @@ export default function Women() {
   };
 
   return (
-    <div className="women-container">
-      <h2 className="women-title">Women's Collection</h2>
+  <div className="home">
 
-      <div className="controls">
+    <h1 className="home-title">Women's Collection</h1>
+
+    <p className="home-subtitle">
+      Discover premium footwear for women.
+    </p>
+
+    <div className="controls">
+      <div className="search-box">
         <input
           type="text"
           placeholder="Search women's products..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="search-input"
         />
-
-        <select
-          className="sort-dropdown"
-          onChange={(e) => setSortOption(e.target.value)}
-        >
-          <option value="">Sort By Price</option>
-          <option value="lowtohigh">Low to High</option>
-          <option value="hightolow">High to Low</option>
-        </select>
       </div>
 
+      <select
+        className="sort-dropdown"
+        value={sortOption}
+        onChange={(e) => setSortOption(e.target.value)}
+      >
+        <option value="">Sort By Price</option>
+        <option value="lowtohigh">Low to High</option>
+        <option value="hightolow">High to Low</option>
+      </select>
+    </div>
+
+    <div className="product-grid">
       {loading ? (
         <p className="loading-text">Loading...</p>
       ) : error ? (
         <p className="error-text">{error}</p>
       ) : filteredProducts.length === 0 ? (
-        <p className="no-products">No products found</p>
+        <p className="error-text">No products found</p>
       ) : (
-        <div className="women-grid">
-          {filteredProducts.map((item) => (
-            <div key={item._id} className="product-card">
-              <button
-                className={`wishlist-button ${
-                  isInWishlist(item._id) ? "active" : ""
-                }`}
-                onClick={() => toggleWishlist(item)}
-              >
-                {isInWishlist(item._id) ? "♥" : "♡"}
-              </button>
+        filteredProducts.map((item) => (
+          <div key={item._id} className="product-card">
 
-              <Link to={`/product/${item._id}`}>
-                <div className="product-image-container">
-                  <img
-                    src={
-                      item.images?.[0]
-                        ? `${BASE_URL}${item.images[0]}`
-                        : "placeholder.jpg"
-                    }
-                    alt={item.name}
-                    className="product-image"
-                  />
-                </div>
-                <h3 className="product-name">{item.name}</h3>
-                <p className="product-brand">{item.brand}</p>
-                <p className="product-price">₹{item.price}</p>
-              </Link>
-            </div>
-          ))}
-        </div>
+            <button
+              className={`wishlist-button ${
+                isInWishlist(item._id) ? "active" : ""
+              }`}
+              onClick={() => toggleWishlist(item)}
+            >
+              {isInWishlist(item._id) ? "♥" : "♡"}
+            </button>
+
+            <Link to={`/product/${item._id}`}>
+              <div className="product-image-container">
+                <img
+                  src={
+                    item.images?.[0]
+                      ? `${BASE_URL}${item.images[0]}`
+                      : "/placeholder.jpg"
+                  }
+                  alt={item.name}
+                  className="product-image"
+                />
+              </div>
+
+              <h3 className="product-name">{item.name}</h3>
+              <p className="product-brand">{item.brand}</p>
+              <p className="product-price">₹{item.price}</p>
+            </Link>
+
+          </div>
+        ))
       )}
     </div>
-  );
+
+  </div>
+);
 }

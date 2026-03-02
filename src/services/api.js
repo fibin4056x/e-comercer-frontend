@@ -1,16 +1,27 @@
 export const request = async (url, method = "GET", body = null) => {
+  const isFormData = body instanceof FormData;
+
   const response = await fetch(`http://localhost:5000/api${url}`, {
     method,
-    headers: {
-      "Content-Type": "application/json",
-    },
     credentials: "include",
-    body: body ? JSON.stringify(body) : null,
+    headers: isFormData
+      ? undefined
+      : {
+          "Content-Type": "application/json",
+        },
+    body: body
+      ? isFormData
+        ? body
+        : JSON.stringify(body)
+      : null,
   });
 
-  // Only attempt refresh for protected routes
-  if (response.status === 401 && !url.includes("/login") && !url.includes("/register") && !url.includes("/verify")) {
-
+  if (
+    response.status === 401 &&
+    !url.includes("/login") &&
+    !url.includes("/register") &&
+    !url.includes("/verify")
+  ) {
     const refreshResponse = await fetch(
       "http://localhost:5000/api/auth/refresh",
       {
@@ -20,14 +31,23 @@ export const request = async (url, method = "GET", body = null) => {
     );
 
     if (refreshResponse.ok) {
-      const retryResponse = await fetch(`http://localhost:5000/api${url}`, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: body ? JSON.stringify(body) : null,
-      });
+      const retryResponse = await fetch(
+        `http://localhost:5000/api${url}`,
+        {
+          method,
+          credentials: "include",
+          headers: isFormData
+            ? undefined
+            : {
+                "Content-Type": "application/json",
+              },
+          body: body
+            ? isFormData
+              ? body
+              : JSON.stringify(body)
+            : null,
+        }
+      );
 
       if (!retryResponse.ok) {
         const errData = await retryResponse.json();

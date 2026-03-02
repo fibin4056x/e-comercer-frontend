@@ -176,7 +176,7 @@ export default function Home() {
             }
             placeholder="Search products..."
           />
-          <Search size={16} />
+          {/* <Search size={16} /> */}
         </div>
 
         <select

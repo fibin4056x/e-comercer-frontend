@@ -1,38 +1,26 @@
 import React, { useEffect, useState, useContext } from "react";
-import axios from "axios";
+import { request } from "../../services/api";
 import { Context } from "../../registrationpage/loginpages/Logincontext";
 import { toast } from "react-toastify";
 import "./Orderpage.css";
-
 
 export default function Orderpage() {
   const { user } = useContext(Context);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [confirmModal, setConfirmModal] = useState({ visible: false, type: "", orderId: null });
+
+  const BASE_URL = "http://localhost:5000";
 
   useEffect(() => {
     if (!user) return;
 
     const fetchOrders = async () => {
       try {
-        let res;
-        if (user.role?.toLowerCase() === "admin") {
-          res = await axios.get("db.json");
-        } else {
-          res = await axios.get(`http://localhost:3000/order?userId=${user.id}`);
-        }
-
-        const normalized = res.data.map((o) => ({
-          ...o,
-          status: o.status || "Pending",
-          items: o.items || [],
-        }));
-
-        setOrders(normalized);
+        setLoading(true);
+        const data = await request("/orders/admin"); // admin route
+        setOrders(Array.isArray(data) ? data : []);
       } catch (err) {
-        console.error("Error fetching orders:", err);
-        toast.error("Failed to fetch orders");
+        toast.error(err.message || "Failed to load orders");
       } finally {
         setLoading(false);
       }
@@ -41,186 +29,133 @@ export default function Orderpage() {
     fetchOrders();
   }, [user]);
 
-
-  const handleSetDelivery = async (orderId, minutes) => {
+  const markDelivered = async (id) => {
     try {
-      const deliveryTime = Date.now() + minutes * 60 * 1000;
-      await axios.patch(`http://localhost:3000/order/${orderId}`, {
-        deliveryTime,
-        status: "Pending",
-      });
-      toast.success(`Delivery time set for ${minutes} minute(s)`);
+      await request(`/orders/${id}/deliver`, "PUT");
+      toast.success("Order marked as delivered");
+
       setOrders((prev) =>
         prev.map((o) =>
-          o.id === orderId ? { ...o, deliveryTime, status: "Pending" } : o
+          o._id === id ? { ...o, isDelivered: true } : o
         )
       );
     } catch (err) {
-      console.error(err);
-      toast.error("Failed to set delivery time");
+      toast.error("Failed to update order");
     }
   };
 
-
-  const handleCancel = (orderId) => {
-    setConfirmModal({ visible: true, type: "single", orderId });
-  };
-
-  const handleCancelConfirmed = async () => {
-    if (confirmModal.type === "single") {
-      try {
-        await axios.patch(`http://localhost:3000/order/${confirmModal.orderId}`, { status: "Cancelled" });
-        setOrders((prev) =>
-          prev.map((o) =>
-            o.id === confirmModal.orderId ? { ...o, status: "Cancelled" } : o
-          )
-        );
-        toast.success("Order cancelled");
-      } catch (err) {
-        console.error(err);
-        toast.error("Failed to cancel order");
-      }
-    }
-    setConfirmModal({ visible: false, type: "", orderId: null });
-  };
-
-  const handleCancelDecline = () => {
-    setConfirmModal({ visible: false, type: "", orderId: null });
-  };
-
-  const handleRemoveOrder = (orderId) => {
-    setConfirmModal({ visible: true, type: "remove", orderId });
-  };
-
-  const handleRemoveConfirmed = async () => {
+  const cancelOrder = async (id) => {
     try {
-      await axios.delete(`http://localhost:3000/order/${confirmModal.orderId}`);
-      setOrders((prev) => prev.filter((o) => o.id !== confirmModal.orderId));
-      toast.success("Order removed");
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to remove order");
-    }
-    setConfirmModal({ visible: false, type: "", orderId: null });
-  };
+      await request(`/orders/${id}/cancel`, "PUT");
+      toast.success("Order cancelled");
 
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setOrders((prevOrders) =>
-        prevOrders.map((order) => {
-          if (order.deliveryTime && order.status === "Pending") {
-            if (Date.now() >= order.deliveryTime) {
-              axios.patch(`http://localhost:3000/order/${order.id}`, { status: "Delivered" }).catch(console.error);
-              return { ...order, status: "Delivered" };
-            }
-          }
-          return order;
-        })
+      setOrders((prev) =>
+        prev.map((o) =>
+          o._id === id ? { ...o, status: "Cancelled" } : o
+        )
       );
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const getCountdown = (deliveryTime) => {
-    if (!deliveryTime) return "00:00";
-    const diff = deliveryTime - Date.now();
-    if (diff <= 0) return "00:00";
-    const mins = Math.floor(diff / 60000);
-    const secs = Math.floor((diff % 60000) / 1000);
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    } catch (err) {
+      toast.error("Failed to cancel order");
+    }
   };
 
-  if (loading) return <p className="upage-loading-text">Loading orders...</p>;
-  if (!orders || orders.length === 0) return <p className="upage-no-orders">No orders found!</p>;
+  if (loading) return <p className="admin-loading">Loading orders...</p>;
+  if (!orders.length) return <p className="admin-empty">No orders found</p>;
 
   return (
-    <div className="upage-orders-container">
-      <h1 className="upage-orders-title">Your Orders</h1>
+    <div className="admin-orders-container">
+      <h1 className="admin-title">Admin Order Management</h1>
+
       {orders.map((order) => (
-        <div key={order.id} className="upage-order-card">
-          <div className="upage-order-header">
-            <h3>
-              Order #{order.id} – {order.firstname || ""} {order.lastname || ""}
-            </h3>
-            {user.role?.toLowerCase() === "admin" && (
-              <button className="upage-remove-btn" onClick={() => handleRemoveOrder(order.id)}>
-                Remove
-              </button>
-            )}
+        <div key={order._id} className="admin-order-card">
+
+          <div className="admin-order-header">
+            <div>
+              <h3>Order #{order._id.slice(-6)}</h3>
+              <p className="admin-date">
+                {new Date(order.createdAt).toLocaleString()}
+              </p>
+              <p className="admin-customer">
+                {order.user?.username} ({order.user?.email})
+              </p>
+            </div>
+
+            <div className="admin-badges">
+              <span className={`badge ${order.isPaid ? "paid" : "unpaid"}`}>
+                {order.isPaid ? "Paid" : "Unpaid"}
+              </span>
+
+              <span className={`badge ${order.isDelivered ? "delivered" : "pending"}`}>
+                {order.isDelivered ? "Delivered" : "Pending"}
+              </span>
+            </div>
           </div>
 
-          <p className="upage-order-contact">Contact: {order.contact || "N/A"}</p>
-          <p className="upage-order-address">
-            Address: {order.address || ""}, {order.city || ""}, {order.postalcode || ""}
-          </p>
-          <p className="upage-order-total">
-            <strong>Total: ₹{order.total || 0}</strong>
-          </p>
+          <div className="admin-items">
+            {order.orderItems?.map((item, i) => (
+              <div key={i} className="admin-item">
 
-          <h4>Items</h4>
-          <ul className="upage-order-items">
-            {order.items.length > 0
-              ? order.items.map((item, i) => (
-                  <li key={i} className="upage-order-item">
-                    {item.name || "Item"} – {item.quantity || 0} × ₹{item.price || 0}
-                  </li>
-                ))
-              : "No items"}
-          </ul>
+                <img
+                  src={
+                    item.image
+                      ? `${BASE_URL}${item.image}`
+                      : "/placeholder.png"
+                  }
+                  alt={item.name}
+                  className="admin-item-image"
+                />
 
-          {order.status === "Pending" && order.deliveryTime && (
-            <p className="upage-countdown">Delivery in: {getCountdown(order.deliveryTime)}</p>
-          )}
+                <div className="admin-item-info">
+                  <p className="item-name">{item.name}</p>
+                  <p>{item.size} • {item.color}</p>
+                  <p>Qty: {item.quantity}</p>
+                </div>
 
-          <p className={`upage-order-status ${order.status.toLowerCase()}`}>
-            Status: {order.status || "Unknown"}
-          </p>
+                <div className="admin-item-price">
+                  ₹{(item.price * item.quantity).toFixed(2)}
+                </div>
+              </div>
+            ))}
+          </div>
 
-          {/* Admin delivery buttons */}
-          {user.role?.toLowerCase() === "admin" && order.status === "Pending" && (
-            <div className="upage-admin-actions">
-              <button onClick={() => handleSetDelivery(order.id, 1)}>1 min</button>
-              <button onClick={() => handleSetDelivery(order.id, 5)}>5 min</button>
-              <button onClick={() => handleSetDelivery(order.id, 30)}>30 min</button>
+          <div className="admin-footer">
+            <div className="admin-shipping">
+              <strong>Shipping:</strong>
+              <p>{order.shippingAddress?.address}</p>
+              <p>
+                {order.shippingAddress?.city},{" "}
+                {order.shippingAddress?.postalCode},{" "}
+                {order.shippingAddress?.country}
+              </p>
             </div>
-          )}
 
-          {user.role?.toLowerCase() === "customer" && order.status === "Pending" && (
-            <button className="upage-cancel-btn" onClick={() => handleCancel(order.id)}>
-              Cancel Order
-            </button>
-          )}
+            <div className="admin-total">
+              ₹{order.totalPrice?.toFixed(2)}
+            </div>
+
+            <div className="admin-actions">
+              {!order.isDelivered && (
+                <button
+                  className="btn-deliver"
+                  onClick={() => markDelivered(order._id)}
+                >
+                  Mark Delivered
+                </button>
+              )}
+
+              {order.status !== "Cancelled" && (
+                <button
+                  className="btn-cancel"
+                  onClick={() => cancelOrder(order._id)}
+                >
+                  Cancel
+                </button>
+              )}
+            </div>
+          </div>
+
         </div>
       ))}
-
-
-      {confirmModal.visible && (
-        <div className="upage-confirm-modal">
-          <div className="upage-confirm-box">
-            <p>
-              {confirmModal.type === "single"
-                ? "Are you sure you want to cancel this order?"
-                : confirmModal.type === "remove"
-                ? "Are you sure you want to remove this order?"
-                : ""}
-            </p>
-            <div className="upage-confirm-buttons">
-              <button
-                className="upage-confirm-btn yes"
-                onClick={
-                  confirmModal.type === "single" ? handleCancelConfirmed : handleRemoveConfirmed
-                }
-              >
-                Yes
-              </button>
-              <button className="upage-confirm-btn no" onClick={handleCancelDecline}>
-                No
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -249,6 +249,7 @@ export default function AddProduct() {
           {product.variants.map((variant, index) => (
             <div key={index} className="ss-add-product-variant-row">
               <input
+                type="number"
                 placeholder="Size"
                 required
                 onChange={(e)=>handleVariantChange(index,"size",e.target.value)}
