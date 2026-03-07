@@ -1,54 +1,161 @@
-.users-container {
-  padding: 20px;
+.admin-users {
+  padding: 30px;
+  color: #f1f5f9;
 }
 
-.users-title {
-  font-size: 24px;
+.admin-users h2 {
   margin-bottom: 20px;
+}
+
+.users-table-wrapper {
+  overflow-x: auto;
 }
 
 .users-table {
   width: 100%;
   border-collapse: collapse;
+  background: #0f172a;
+  border-radius: 10px;
 }
 
-.users-table th,
+.users-table th {
+  background: #1e293b;
+  padding: 14px;
+  text-align: left;
+  font-weight: 600;
+}
+
 .users-table td {
-  border: 1px solid #ddd;
-  padding: 10px;
-  text-align: center;
+  padding: 12px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.users-table tr:hover {
+  background: #1e293b;
+}
+
+/* USER */
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* AVATAR */
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatar-letter {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #6366f1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 600;
+}
+
+/* ROLE */
+
+.role-admin {
+  color: #22c55e;
+  font-weight: 600;
+}
+
+.role-user {
+  color: #94a3b8;
+}
+
+/* STATUS */
+
+.status-active {
+  color: #22c55e;
+  font-weight: 500;
+}
+
+.status-banned {
+  color: #ef4444;
+  font-weight: 500;
+}
+
+/* BUTTONS */
+
+button {
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  cursor: pointer;
+  margin-right: 6px;
+  transition: 0.2s;
+}
+
+button:hover {
+  opacity: 0.85;
+}
+
+.promote {
+  background: #16a34a;
+  color: white;
+}
+
+.demote {
+  background: #f59e0b;
+  color: white;
+}
+
+.ban-btn {
+  background: #ef4444;
+  color: white;
 }
 
 .delete-btn {
-  background-color: red;
+  background: #7f1d1d;
   color: white;
-  border: none;
-  padding: 6px 10px;
-  margin-right: 5px;
-  cursor: pointer;
-  border-radius: 4px;
 }
 
-.promote-btn {
-  background-color: green;
-  color: white;
-  border: none;
-  padding: 6px 10px;
-  cursor: pointer;
-  border-radius: 4px;
+/* CONFIRM MODAL */
+
+.confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.demote-btn {
-  background-color: orange;
-  color: white;
-  border: none;
-  padding: 6px 10px;
-  cursor: pointer;
-  border-radius: 4px;
+.confirm-box {
+  background: #0f172a;
+  padding: 25px;
+  border-radius: 10px;
+  width: 320px;
 }
 
-.no-users {
-  text-align: center;
-  font-size: 16px;
-  color: gray;
+.confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 15px;
+  gap: 10px;
+}
+
+.confirm-cancel {
+  background: #334155;
+  color: white;
+}
+
+.confirm-yes {
+  background: #ef4444;
+  color: white;
 }

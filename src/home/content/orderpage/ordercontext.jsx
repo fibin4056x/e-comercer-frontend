@@ -1,68 +1,110 @@
-import axios from "axios";
 import React, { createContext, useEffect, useState, useContext } from "react";
+import { request } from "../../../services/api";
 import { toast } from "react-toastify";
 import { Context } from "../../../registrationpage/loginpages/Logincontext";
 
 const OrderContext = createContext();
 
 export default function OrderProvider({ children }) {
+
   const { user } = useContext(Context);
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(false);
 
-  const API = "http://localhost:5000/api/orders";
+  const [orders,setOrders] = useState([]);
+  const [loading,setLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchOrders = async () => {
 
-      if (!user) {
-        console.log("⚠ No user found. Clearing orders.");
-        setOrders([]);
-        return;
-      }
+  /* ================= FETCH ORDERS ================= */
 
-      try {
-        setLoading(true);
+  const fetchOrders = async () => {
 
-        console.log("📥 Fetching orders (cookie-based)...");
+    if(!user){
+      setOrders([]);
+      return;
+    }
 
-        const response = await axios.get(
-          API,
-          {
-            withCredentials: true, // 🔥 REQUIRED FOR COOKIE AUTH
-          }
-        );
+    try{
 
-        console.log("📦 Orders response:", response.data);
+      setLoading(true);
 
-        setOrders(response.data || []);
+      console.log("📥 Fetching user orders");
 
-      } catch (error) {
-        console.error("❌ Error fetching orders:", error.response?.data || error);
+      const data = await request("/orders/my");
 
-        if (error.response?.status === 401) {
-          toast.error("Session expired. Please login again.");
-        } else {
-          toast.error("Failed to fetch orders");
-        }
+      console.log("📦 Orders:",data);
 
-        setOrders([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+      setOrders(Array.isArray(data) ? data : []);
+
+    }catch(err){
+
+      console.error("❌ Orders fetch error:",err);
+
+      toast.error(err.message || "Failed to fetch orders");
+
+      setOrders([]);
+
+    }finally{
+
+      setLoading(false);
+
+    }
+
+  };
+
+
+  /* ================= CANCEL ORDER ================= */
+
+  const cancelOrder = async(id)=>{
+
+    try{
+
+      await request(`/orders/${id}/cancel`,"PUT");
+
+      setOrders(prev =>
+        prev.map(o =>
+          o._id === id
+            ? {...o,status:"Cancelled"}
+            : o
+        )
+      );
+
+      toast.success("Order cancelled");
+
+    }catch(err){
+
+      console.error("Cancel error:",err);
+
+      toast.error("Cancel failed");
+
+    }
+
+  };
+
+
+  /* ================= LOAD ORDERS ================= */
+
+  useEffect(()=>{
 
     fetchOrders();
 
-  }, [user]);
+  },[user]);
 
-  return (
+
+  return(
+
     <OrderContext.Provider
-      value={{ orders, setOrders, loading }}
+      value={{
+        orders,
+        setOrders,
+        loading,
+        fetchOrders,
+        cancelOrder
+      }}
     >
       {children}
     </OrderContext.Provider>
+
   );
+
 }
 
 export { OrderContext };

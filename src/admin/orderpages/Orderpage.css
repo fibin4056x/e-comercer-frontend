@@ -1,118 +1,112 @@
-.admin-orders-container {
-  max-width: 1200px;
-  margin: 40px auto;
-  padding: 20px;
+.admin-orders{
+padding:40px;
+color:#fff;
 }
 
-.admin-title {
-  font-size: 30px;
-  font-weight: 700;
-  margin-bottom: 30px;
+.admin-title{
+font-size:28px;
+margin-bottom:20px;
 }
 
-.admin-order-card {
-  background: #ffffff;
-  border-radius: 18px;
-  padding: 25px;
-  margin-bottom: 25px;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.06);
+.orders-table{
+width:100%;
+border-collapse:collapse;
+background:#0b1c35;
+border-radius:10px;
+overflow:hidden;
 }
 
-.admin-order-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 20px;
+.orders-table th{
+text-align:left;
+padding:14px;
+background:#14294d;
 }
 
-.admin-customer {
-  font-size: 14px;
-  color: #555;
+.orders-table td{
+padding:14px;
+border-top:1px solid #1c355f;
 }
 
-.admin-badges .badge {
-  padding: 6px 12px;
-  border-radius: 20px;
-  margin-left: 8px;
-  font-size: 13px;
-  font-weight: 600;
+.order-row:hover{
+background:#11264b;
+cursor:pointer;
 }
 
-.badge.paid {
-  background: #e6f7f1;
-  color: #059669;
+.badge{
+padding:4px 10px;
+border-radius:6px;
+font-size:12px;
+font-weight:600;
 }
 
-.badge.unpaid {
-  background: #fde2e2;
-  color: #dc2626;
+.paid{
+background:#1b8f4b;
 }
 
-.badge.delivered {
-  background: #e0f2fe;
-  color: #0284c7;
+.unpaid{
+background:#a83d3d;
 }
 
-.badge.pending {
-  background: #fff4e5;
-  color: #d97706;
+.status-pending{
+background:#b58a1d;
 }
 
-.admin-items {
-  border-top: 1px solid #eee;
-  border-bottom: 1px solid #eee;
-  padding: 20px 0;
+.status-delivered{
+background:#1e7f3f;
 }
 
-.admin-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 15px;
+.status-cancelled{
+background:#b83b3b;
 }
 
-.admin-item-image {
-  width: 70px;
-  height: 70px;
-  object-fit: cover;
-  border-radius: 10px;
+.actions button{
+margin-right:8px;
+padding:6px 12px;
+border:none;
+border-radius:6px;
+cursor:pointer;
 }
 
-.admin-item-info {
-  flex: 1;
-  margin-left: 15px;
+.btn-deliver{
+background:#1fb36c;
+color:white;
 }
 
-.admin-item-price {
-  font-weight: 600;
+.btn-cancel{
+background:#d9534f;
+color:white;
 }
 
-.admin-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 20px;
+.order-details{
+background:#091427;
 }
 
-.admin-total {
-  font-size: 20px;
-  font-weight: 700;
+.details{
+padding:20px;
 }
 
-.admin-actions button {
-  margin-left: 10px;
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  font-weight: 600;
+.detail-item{
+display:flex;
+align-items:center;
+justify-content:space-between;
+margin-bottom:12px;
 }
 
-.btn-deliver {
-  background: #111;
-  color: white;
+.detail-item img{
+width:60px;
+border-radius:6px;
+margin-right:10px;
 }
 
-.btn-cancel {
-  background: #dc2626;
-  color: white;
-}  
+.shipping{
+margin-top:20px;
+font-size:14px;
+color:#ccc;
+}
+
+.admin-loading,
+.admin-empty{
+padding:40px;
+text-align:center;
+font-size:18px;
+}

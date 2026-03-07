@@ -1,155 +1,264 @@
 import React, { useEffect, useState } from "react";
-import { request, } from "../../../services/api";
+import { request } from "../../../services/api";
 import { toast } from "react-toastify";
 import "./order.css";
 
 export default function Orders() {
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [countdowns, setCountdowns] = useState({});
-  const BASE_URL= "http://localhost:5000";
+
+  const [orders,setOrders] = useState([]);
+  const [loading,setLoading] = useState(true);
+
+  const BASE_URL = "http://localhost:5000";
+
   /* ================= FETCH ORDERS ================= */
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        console.log("📥 Fetching orders...");
-        const data = await request("/orders");
-        console.log("📦 Orders received:", data);
-        setOrders(data || []);
-      } catch (err) {
-        console.error("❌ Orders fetch error:", err);
-        toast.error(err.message || "Failed to load orders");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchOrders = async()=>{
 
+    try{
+
+      setLoading(true);
+
+      const data = await request("/orders/my");
+
+      setOrders(Array.isArray(data) ? data : []);
+
+    }catch(err){
+
+      console.error("❌ Orders error:",err);
+      toast.error("Failed to load orders");
+
+    }finally{
+
+      setLoading(false);
+
+    }
+
+  };
+
+  useEffect(()=>{
     fetchOrders();
-  }, []);
+  },[]);
 
-  /* ================= DELIVERY COUNTDOWN ================= */
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const newCountdowns = {};
 
-      orders.forEach((order) => {
-        if (order.deliveryTime && order.status === "Pending") {
-          const diff = order.deliveryTime - Date.now();
+  /* ================= CANCEL ORDER ================= */
 
-          const mins = Math.floor(diff / 60000);
-          const secs = Math.floor((diff % 60000) / 1000);
+  const cancelOrder = async(id)=>{
 
-          newCountdowns[order._id] =
-            diff > 0
-              ? `${mins.toString().padStart(2, "0")}:${secs
-                  .toString()
-                  .padStart(2, "0")}`
-              : "Delivered";
+    const confirm = window.confirm("Cancel this order?");
+    if(!confirm) return;
 
-          if (diff <= 0 && order.status !== "Delivered") {
-            setOrders((prev) =>
-              prev.map((o) =>
-                o._id === order._id
-                  ? { ...o, status: "Delivered" }
-                  : o
-              )
-            );
-          }
-        }
-      });
+    try{
 
-      setCountdowns(newCountdowns);
-    }, 1000);
+      await request(`/orders/${id}/cancel`,"PUT");
 
-    return () => clearInterval(interval);
-  }, [orders]);
+      toast.success("Order cancelled");
 
-  /* ================= LOADING / EMPTY ================= */
+      fetchOrders(); // refresh from server
 
-  if (loading)
-    return <h2 className="orders-message">Loading orders...</h2>;
+    }catch(err){
 
-  if (!orders || orders.length === 0)
-    return <h2 className="orders-message">No orders found</h2>;
+      console.error("Cancel error:",err);
+      toast.error("Cancel failed");
+
+    }
+
+  };
+
+
+
+  /* ================= STATUS CLASS ================= */
+
+  const statusClass = (status)=>{
+
+    switch(status){
+      case "Delivered":
+        return "status delivered";
+
+      case "Cancelled":
+        return "status cancelled";
+
+      case "Shipped":
+        return "status shipped";
+
+      default:
+        return "status processing";
+    }
+
+  };
+
+
+
+  /* ================= LOADING ================= */
+
+  if(loading){
+
+    return(
+      <div className="orders-loading">
+        Loading your orders...
+      </div>
+    );
+
+  }
+
+
+
+  /* ================= EMPTY ================= */
+
+  if(!orders.length){
+
+    return(
+      <div className="orders-empty">
+
+        <h2>No orders yet</h2>
+        <p>Looks like you haven't placed an order.</p>
+
+      </div>
+    );
+
+  }
+
+
 
   /* ================= UI ================= */
 
-  return (
-    <div className="premium-orders">
-      <h1 className="orders-title">My Orders</h1>
+  return(
 
-      {orders.map((order) => (
+    <div className="orders-container">
+
+      <h1 className="orders-title">
+        My Orders
+      </h1>
+
+
+      {orders.map(order => (
+
         <div key={order._id} className="order-card">
+
+          {/* HEADER */}
+
           <div className="order-header">
+
             <div>
+
               <p className="order-id">
                 Order #{order._id.slice(-6)}
               </p>
+
               <p className="order-date">
                 {new Date(order.createdAt).toLocaleString()}
               </p>
+
             </div>
 
-            <div className={`status-badge ${order.status?.toLowerCase()}`}>
-              {order.status || "Pending"}
+
+            <div className="order-badges">
+
+              <span className={`status-badge ${statusClass(order.status)}`}>
+                {order.status || "Processing"}
+              </span>
+
+              <span className={`payment-badge ${order.isPaid ? "paid" : "unpaid"}`}>
+                {order.isPaid ? "Paid" : "Unpaid"}
+              </span>
+
             </div>
+
           </div>
 
+
+
+          {/* ITEMS */}
+
           <div className="order-items">
-            {order.orderItems?.map((item, index) => (
-              <div key={index} className="order-item">
-               <img
-  src={
-    item.image
-      ? `${BASE_URL}${item.image}`
-      : "/placeholder.png"
-  }
-  alt={item.name}
-  className="order-thumb"
-/>
+
+            {(order.orderItems || []).map((item,i)=>(
+
+              <div key={i} className="order-item">
+
+                <img
+                  src={item.image ? `${BASE_URL}${item.image}` : "/placeholder.png"}
+                  alt={item.name}
+                  className="order-thumb"
+                />
 
                 <div className="order-item-info">
-                  <p className="item-name">{item.name}</p>
+
+                  <p className="item-name">
+                    {item.name}
+                  </p>
+
                   <p className="item-variant">
                     {item.size} • {item.color}
                   </p>
+
                   <p className="item-qty">
                     Qty: {item.quantity}
                   </p>
+
                 </div>
 
                 <div className="order-price">
                   ₹{(item.price * item.quantity).toFixed(2)}
                 </div>
+
               </div>
+
             ))}
+
           </div>
 
+
+
+          {/* FOOTER */}
+
           <div className="order-footer">
+
             <div className="shipping-info">
-              <p><strong>Address:</strong> {order.shippingAddress?.address}</p>
-              <p><strong>City:</strong> {order.shippingAddress?.city}</p>
-              <p><strong>Country:</strong> {order.shippingAddress?.country}</p>
+
+              <p>
+                <strong>Address:</strong>
+              </p>
+
+              <p>{order.shippingAddress?.address}</p>
+
+              <p>
+                {order.shippingAddress?.city},{" "}
+                {order.shippingAddress?.postalCode},{" "}
+                {order.shippingAddress?.country}
+              </p>
+
             </div>
 
+
             <div className="order-summary">
-              <p className="total-label">Total</p>
+
               <p className="total-price">
                 ₹{order.totalPrice?.toFixed(2)}
               </p>
 
-              {countdowns[order._id] && (
-                <p className="delivery-timer">
-                  Delivery in: {countdowns[order._id]}
-                </p>
+
+              {order.status === "Processing" && (
+
+                <button
+                  className="cancel-btn"
+                  onClick={()=>cancelOrder(order._id)}
+                >
+                  Cancel Order
+                </button>
+
               )}
+
             </div>
+
           </div>
 
         </div>
+
       ))}
+
     </div>
+
   );
+
 }
