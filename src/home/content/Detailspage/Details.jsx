@@ -175,13 +175,20 @@ const deleteReview = async (reviewId) => {
     toast.error("Failed to delete review");
   }
 };
+const renderStars = (rating = 0) => {
+  const stars = [];
+  const rounded = Math.round(rating);
 
-const renderStars = (rating = 0) =>
-  [...Array(5)].map((_, i) => (
-    <span key={i}>
-      {i < Math.round(rating) ? "★" : "☆"}
-    </span>
-  ));
+  for (let i = 1; i <= 5; i++) {
+    stars.push(
+      <span key={i}>
+        {i <= rounded ? "★" : "☆"}
+      </span>
+    );
+  }
+
+  return stars;
+};
   if (loading) return <h2 style={{ textAlign: "center" }}>Loading...</h2>;
   if (!product) return <h2 style={{ textAlign: "center" }}>Not Found</h2>;
 
@@ -312,7 +319,8 @@ const renderStars = (rating = 0) =>
   </div>
 
   {/* Review List */}
-  {product.reviews?.length > 0 ? (
+  {
+  product.reviews.length > 0 ? (
     product.reviews.map((rev) => (
       <div key={rev._id} className="review-card">
         <div className="review-header">

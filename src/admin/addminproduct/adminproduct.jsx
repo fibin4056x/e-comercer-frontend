@@ -7,8 +7,8 @@ import "./AdminProducts.css";
 axios.defaults.withCredentials = true;
 
 export default function AdminProducts() {
-
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true); // Added loading state
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -17,21 +17,31 @@ export default function AdminProducts() {
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get(
-        "http://localhost:5000/api/products"
-      );
-      setProducts(res.data);
-    } catch {
+      setLoading(true);
+      const res = await axios.get("http://localhost:5000/api/products");
+      
+      console.log("Admin Data Check:", res.data);
+
+      /**
+       * FIX: Your backend sends { products: [], pages: 5, page: 1 }
+       * We must drill into the 'products' property.
+       */
+      const dataArray = res.data?.products || (Array.isArray(res.data) ? res.data : []);
+      
+      setProducts(dataArray);
+    } catch (err) {
+      console.error("Fetch Error:", err);
       toast.error("Failed to load products");
+    } finally {
+      setLoading(false);
     }
   };
 
   const deleteProduct = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
-      await axios.delete(
-        `http://localhost:5000/api/products/${id}`
-      );
-      toast.success("Deleted");
+      await axios.delete(`http://localhost:5000/api/products/${id}`);
+      toast.success("Deleted successfully");
       fetchProducts();
     } catch {
       toast.error("Delete failed");
@@ -40,51 +50,50 @@ export default function AdminProducts() {
 
   return (
     <div className="admin-products-page">
-
       <div className="admin-header">
         <h2>Product Management</h2>
-        <button
-          onClick={() => navigate("/addproduct")}
-          className="add-btn"
-        >
+        <button onClick={() => navigate("/addproduct")} className="add-btn">
           + Add Product
         </button>
       </div>
 
-      {products.map((product) => (
-        <div key={product._id} className="product-row">
+      {loading ? (
+        <p>Updating Inventory...</p>
+      ) : (
+        /* FIX: Using (products || []) ensures map never runs on a null/object value */
+        (products || []).map((product) => (
+          <div key={product._id} className="product-row">
+            <img
+              src={`http://localhost:5000${product.images?.[0] || "/placeholder.png"}`}
+              alt={product.name}
+            />
 
-          <img
-            src={`http://localhost:5000${product.images?.[0]}`}
-            alt={product.name}
-          />
+            <div className="info">
+              <h4>{product.name}</h4>
+              <p>₹{product.price}</p>
+              <span className="stock-tag">Stock: {product.variants?.[0]?.stock || 0}</span>
+            </div>
 
-          <div className="info">
-            <h4>{product.name}</h4>
-            <p>₹{product.price}</p>
+            <div className="actions">
+              <button
+                className="edit"
+                onClick={() => navigate(`/admin/update/${product._id}`)}
+              >
+                Edit
+              </button>
+
+              <button
+                className="delete"
+                onClick={() => deleteProduct(product._id)}
+              >
+                Delete
+              </button>
+            </div>
           </div>
-
-          <div className="actions">
-            <button
-              className="edit"
-              onClick={() =>
-                navigate(`/admin/update/${product._id}`)
-              }
-            >
-              Edit
-            </button>
-
-            <button
-              className="delete"
-              onClick={() => deleteProduct(product._id)}
-            >
-              Delete
-            </button>
-          </div>
-
-        </div>
-      ))}
-
+        ))
+      )}
+      
+      {!loading && products.length === 0 && <p>No products found in the catalog.</p>}
     </div>
   );
 }
