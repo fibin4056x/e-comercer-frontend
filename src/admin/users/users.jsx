@@ -11,7 +11,7 @@ export default function Users() {
   }, []);
 
   const fetchUsers = async () => {
-    const res = await axios.get("http://localhost:5000/api/admin/users", {
+    const res = await axios.get("https://e-comerce-backend-cfkk.onrender.com/api/admin/users", {
       withCredentials: true,
     });
     setUsers(res.data);
@@ -27,7 +27,7 @@ export default function Users() {
 
   const changeRole = async (id, role) => {
     await axios.patch(
-      `http://localhost:5000/api/admin/users/${id}/role`,
+      `https://e-comerce-backend-cfkk.onrender.com/api/admin/users/${id}/role`,
       { role },
       { withCredentials: true }
     );
@@ -39,7 +39,7 @@ export default function Users() {
 
   const toggleBan = async (id, banned) => {
     await axios.patch(
-      `http://localhost:5000/api/admin/users/${id}/ban`,
+      `https://e-comerce-backend-cfkk.onrender.com/api/admin/users/${id}/ban`,
       { banned },
       { withCredentials: true }
     );
@@ -57,7 +57,7 @@ export default function Users() {
     const { id } = confirmAction;
 
     await axios.delete(
-      `http://localhost:5000/api/admin/users/${id}`,
+      `https://e-comerce-backend-cfkk.onrender.com/api/admin/users/${id}`,
       { withCredentials: true }
     );
 
@@ -90,7 +90,7 @@ export default function Users() {
                 <td className="user-info">
                   {user.profileImage ? (
                     <img
-                      src={`http://localhost:5000${user.profileImage}`}
+                      src={`https://e-comerce-backend-cfkk.onrender.com${user.profileImage}`}
                       alt="avatar"
                       className="avatar"
                     />

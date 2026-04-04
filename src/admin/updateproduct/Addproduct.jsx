@@ -170,7 +170,7 @@ export default function AddProduct() {
       });
 
       const response = await axios.post(
-        "http://localhost:5000/api/products",
+        "https://e-comerce-backend-cfkk.onrender.com/api/products",
         formData,
         {
           withCredentials: true, // 🔥 THIS FIXES AUTH

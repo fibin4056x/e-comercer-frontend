@@ -17,7 +17,7 @@ export default function RemoveProduct() {
   const fetchProducts = async () => {
     try {
       const res = await axios.get(
-        "http://localhost:5000/api/products"
+        "https://e-comerce-backend-cfkk.onrender.com/api/products"
       );
       setProducts(res.data);
     } catch (err) {
@@ -36,7 +36,7 @@ export default function RemoveProduct() {
 
     try {
       await axios.delete(
-  `http://localhost:5000/api/products/${selectedProduct._id}`,
+  `https://e-comerce-backend-cfkk.onrender.com/api/products/${selectedProduct._id}`,
   {
     withCredentials: true,  // 🔥 this is what you need
   }
@@ -73,7 +73,7 @@ export default function RemoveProduct() {
           {products.map((product) => (
             <div key={product._id} className="product-card">
               <img
-                src={`http://localhost:5000${product.images?.[0]}`}
+                src={`https://e-comerce-backend-cfkk.onrender.com${product.images?.[0]}`}
                 alt={product.name}
               />
               <h4>{product.name}</h4>

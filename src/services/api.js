@@ -1,7 +1,7 @@
 export const request = async (url, method = "GET", body = null) => {
   const isFormData = body instanceof FormData;
 
-  const response = await fetch(`http://localhost:5000/api${url}`, {
+  const response = await fetch(`https://e-comerce-backend-cfkk.onrender.com/api${url}`, {
     method,
     credentials: "include",
     headers: isFormData
@@ -23,7 +23,7 @@ export const request = async (url, method = "GET", body = null) => {
     !url.includes("/verify")
   ) {
     const refreshResponse = await fetch(
-      "http://localhost:5000/api/auth/refresh",
+      "https://e-comerce-backend-cfkk.onrender.com/api/auth/refresh",
       {
         method: "POST",
         credentials: "include",
@@ -32,7 +32,7 @@ export const request = async (url, method = "GET", body = null) => {
 
     if (refreshResponse.ok) {
       const retryResponse = await fetch(
-        `http://localhost:5000/api${url}`,
+        `https://e-comerce-backend-cfkk.onrender.com/api${url}`,
         {
           method,
           credentials: "include",

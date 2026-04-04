@@ -111,7 +111,7 @@ function Userdetails() {
             <div className="avatar">
               {user.profileImage ? (
                 <img
-                  src={`http://localhost:5000${user.profileImage}`}
+                  src={`https://e-comerce-backend-cfkk.onrender.com${user.profileImage}`}
                   alt="Profile"
                   className="avatar-img"
                 />

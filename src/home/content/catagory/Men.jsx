@@ -13,7 +13,7 @@ export default function Men() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const BASE_URL = "http://localhost:5000";
+  const BASE_URL = "https://e-comerce-backend-cfkk.onrender.com";
 
   const { user } = useContext(Logincontext);
   const {

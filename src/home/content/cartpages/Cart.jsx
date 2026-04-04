@@ -8,7 +8,7 @@ import { request } from "../../../services/api";
 export default function Cart() {
   const { cart, user, setCart } = useContext(Context);
 
-  const BASE_URL = "http://localhost:5000"; // 🔥 Added
+  const BASE_URL = "https://e-comerce-backend-cfkk.onrender.com"; // 🔥 Added
 
   const items = Array.isArray(cart?.items) ? cart.items : [];
 

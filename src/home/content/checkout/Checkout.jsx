@@ -11,7 +11,7 @@ export default function Checkout() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  const BASE_URL = "http://localhost:5000";
+  const BASE_URL = "https://e-comerce-backend-cfkk.onrender.com";
 
   const items = Array.isArray(cart?.items) ? cart.items : [];
 

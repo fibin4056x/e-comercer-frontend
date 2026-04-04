@@ -6,6 +6,8 @@ import { toast } from "react-toastify";
 import "./wishlist.css";
 
 function Wishlist() {
+  const BASE_URL = "https://e-comerce-backend-cfkk.onrender.com";
+
   const {
     wishlist = [],
     removeFromWishlist,
@@ -13,9 +15,6 @@ function Wishlist() {
     error,
   } = useContext(WishlistContext);
 
-  /* =============================
-     DEBUG LOGS
-  ============================== */
   useEffect(() => {
     console.log("📦 Wishlist Data:", wishlist);
     if (error) {
@@ -25,11 +24,10 @@ function Wishlist() {
 
   const handleRemove = async (productId) => {
     try {
-      console.log("❌ Removing from wishlist:", productId);
       await removeFromWishlist(productId);
       toast.success("Removed from wishlist");
     } catch (err) {
-      console.error("🔥 Remove error:", err);
+      console.error("Remove error:", err);
       toast.error("Failed to remove item");
     }
   };
@@ -62,8 +60,9 @@ function Wishlist() {
               <div className="wishlist-image-wrapper">
                 <img
                   src={
-                    item.images?.[0] ||
-                    "https://via.placeholder.com/300"
+                    item.images?.[0]
+                      ? `${BASE_URL}${item.images[0]}`
+                      : "https://via.placeholder.com/300"
                   }
                   alt={item.name}
                   className="wishlist-image"

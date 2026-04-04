@@ -8,7 +8,7 @@ export default function Orders() {
   const [orders,setOrders] = useState([]);
   const [loading,setLoading] = useState(true);
 
-  const BASE_URL = "http://localhost:5000";
+  const BASE_URL = "https://e-comerce-backend-cfkk.onrender.com";
 
   /* ================= FETCH ORDERS ================= */
 

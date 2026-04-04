@@ -34,7 +34,7 @@ export default function UpdateProduct() {
     const fetchProduct = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:5000/api/products/${id}`
+          `https://e-comerce-backend-cfkk.onrender.com${id}`
         );
 
         setProduct({
@@ -45,7 +45,7 @@ export default function UpdateProduct() {
         if (res.data.images?.length > 0) {
           setPreview(
             res.data.images.map(
-              (img) => `http://localhost:5000${img}`
+              (img) => `https://e-comerce-backend-cfkk.onrender.com${img}`
             )
           );
         }
@@ -140,7 +140,7 @@ export default function UpdateProduct() {
       });
 
       await axios.put(
-        `http://localhost:5000/api/products/${id}`,
+        `https://e-comerce-backend-cfkk.onrender.com/api/products/${id}`,
         formData
       );
 

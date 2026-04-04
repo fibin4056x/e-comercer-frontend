@@ -20,7 +20,7 @@ function Details() {
 const [reviewRating, setReviewRating] = useState(0);
 const [reviewComment, setReviewComment] = useState("");
 const [editingReviewId, setEditingReviewId] = useState(null);
-  const BASE_URL = "http://localhost:5000";
+  const BASE_URL = "https://e-comerce-backend-cfkk.onrender.com";
 
   /* ================= FETCH PRODUCT ================= */
 
