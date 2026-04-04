@@ -2,7 +2,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
-import "./UpdateProduct.css";
+import "./Updateproduct.css";
 
 axios.defaults.withCredentials = true;
 

@@ -1,67 +1,56 @@
+const BASE_URL = "https://e-comerce-backend-cfkk.onrender.com";
+
 export const request = async (url, method = "GET", body = null) => {
   const isFormData = body instanceof FormData;
 
-  const response = await fetch(`https://e-comerce-backend-cfkk.onrender.com/api${url}`, {
-    method,
-    credentials: "include",
-    headers: isFormData
-      ? undefined
-      : {
-          "Content-Type": "application/json",
-        },
-    body: body
-      ? isFormData
-        ? body
-        : JSON.stringify(body)
-      : null,
-  });
+  const makeRequest = async () => {
+    const res = await fetch(`${BASE_URL}/api${url}`, {
+      method,
+      credentials: "include",
+      headers: isFormData
+        ? undefined
+        : { "Content-Type": "application/json" },
+      body: body
+        ? isFormData
+          ? body
+          : JSON.stringify(body)
+        : null,
+    });
 
+    let data;
+    try {
+      data = await res.json();
+    } catch {
+      data = {};
+    }
+
+    return { res, data };
+  };
+
+  // 🔹 First request
+  let { res, data } = await makeRequest();
+
+  // 🔹 If unauthorized → try refresh
   if (
-    response.status === 401 &&
+    res.status === 401 &&
     !url.includes("/login") &&
     !url.includes("/register") &&
     !url.includes("/verify")
   ) {
-    const refreshResponse = await fetch(
-      "https://e-comerce-backend-cfkk.onrender.com/api/auth/refresh",
-      {
-        method: "POST",
-        credentials: "include",
-      }
-    );
+    const refresh = await fetch(`${BASE_URL}/api/auth/refresh`, {
+      method: "POST",
+      credentials: "include",
+    });
 
-    if (refreshResponse.ok) {
-      const retryResponse = await fetch(
-        `https://e-comerce-backend-cfkk.onrender.com/api${url}`,
-        {
-          method,
-          credentials: "include",
-          headers: isFormData
-            ? undefined
-            : {
-                "Content-Type": "application/json",
-              },
-          body: body
-            ? isFormData
-              ? body
-              : JSON.stringify(body)
-            : null,
-        }
-      );
-
-      if (!retryResponse.ok) {
-        const errData = await retryResponse.json();
-        throw new Error(errData.message);
-      }
-
-      return await retryResponse.json();
+    if (refresh.ok) {
+      ({ res, data } = await makeRequest());
     }
   }
 
-  if (!response.ok) {
-    const errData = await response.json();
-    throw new Error(errData.message);
+  // 🔴 Final error handling
+  if (!res.ok) {
+    throw new Error(data?.message || "Request failed");
   }
 
-  return await response.json();
+  return data;
 };
