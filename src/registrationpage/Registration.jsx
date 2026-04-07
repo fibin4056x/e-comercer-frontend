@@ -52,14 +52,6 @@ const { user } = useContext(Context);
       return toast.warning("Password must be at least 6 characters");
     }
 
-    if (!/[0-9]/.test(password)) {
-      return toast.warning("Password must contain at least one number");
-    }
-
-    if (!/[!@#$%^&*]/.test(password)) {
-      return toast.warning("Password must contain a special character");
-    }
-
     if (!/^[A-Za-z0-9_]+$/.test(username)) {
       return toast.warning("Username can only contain letters, numbers, and underscores");
     }

@@ -31,9 +31,26 @@ export default function RegistrationPage() {
     event.preventDefault();
 
     const { username, email, password, confirmPassword } = form;
+    const normalizedUsername = username.trim();
+    const normalizedEmail = email.trim();
 
-    if (!username || !email || !password || !confirmPassword) {
+    if (!normalizedUsername || !normalizedEmail || !password || !confirmPassword) {
       toast.warning("All fields are required");
+      return;
+    }
+
+    if (!/\S+@\S+\.\S+/.test(normalizedEmail)) {
+      toast.warning("Enter a valid email address");
+      return;
+    }
+
+    if (password.length < 6) {
+      toast.warning("Password must be at least 6 characters");
+      return;
+    }
+
+    if (!/^[A-Za-z0-9_]+$/.test(normalizedUsername)) {
+      toast.warning("Username can only contain letters, numbers, and underscores");
       return;
     }
 
@@ -46,8 +63,8 @@ export default function RegistrationPage() {
       setLoading(true);
 
       await request("/auth/register", "POST", {
-        username: username.trim(),
-        email: email.trim(),
+        username: normalizedUsername,
+        email: normalizedEmail,
         password,
       });
 
