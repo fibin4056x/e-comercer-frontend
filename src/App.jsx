@@ -23,24 +23,10 @@ import { Context } from "./registrationpage/loginpages/Logincontext";
 import Userdetails from "./home/content/Userdetails/Userdetails";
 import AdminProducts from "./admin/addminproduct/adminproduct";
 import UpdateProduct from "./admin/addproduct/UpdateProduct";
-import { request } from "./services/api";
 
 function App() {
-  const { user, setUser } = useContext(Context);
+  const { user } = useContext(Context);
 
-  // 🔐 VERIFY TOKEN WHEN APP LOADS
-  useEffect(() => {
-    const verifyUser = async () => {
-      try {
-        const profile = await request("/auth/profile", "GET");
-        setUser(profile);
-      } catch {
-        setUser(null);
-      }
-    };
-
-    verifyUser();
-  }, [setUser]);
 
   return (
     <BrowserRouter>

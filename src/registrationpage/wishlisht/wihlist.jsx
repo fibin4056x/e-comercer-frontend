@@ -6,7 +6,10 @@ import { toast } from "react-toastify";
 import "./wishlist.css";
 
 function Wishlist() {
-  const BASE_URL = "https://e-comerce-backend-cfkk.onrender.com";
+ const BASE_URL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://e-comerce-backend-cfkk.onrender.com";;
 
   const {
     wishlist = [],

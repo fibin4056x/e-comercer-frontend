@@ -7,8 +7,10 @@ import { toast } from "react-toastify";
 import { request } from "../services/api";
 
 export default function Home() {
-  const BASE_URL = "https://e-comerce-backend-cfkk.onrender.com";
-
+  const BASE_URL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://e-comerce-backend-cfkk.onrender.com";
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState("");

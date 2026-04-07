@@ -1,10 +1,7 @@
 import React, { useState, useMemo } from "react";
-import axios from "axios";
+import { request } from "../../services/api";
 import { toast } from "react-toastify";
 import "./AddProduct.css";
-
-// 🔥 IMPORTANT: enable cookie sending
-axios.defaults.withCredentials = true;
 
 export default function AddProduct() {
 
@@ -169,16 +166,10 @@ export default function AddProduct() {
         formData.append("images", img);
       });
 
-      const response = await axios.post(
-        "https://e-comerce-backend-cfkk.onrender.com/api/products",
-        formData,
-        {
-          withCredentials: true, // 🔥 THIS FIXES AUTH
-        }
-      );
+      const response = await request("/products", "POST", formData);
 
       toast.success("Product Created Successfully");
-      console.log("✅ Product Created:", response.data);
+      console.log("✅ Product Created:", response);
 
     } catch (error) {
       console.error("🔥 Upload Error:", error);

@@ -4,13 +4,14 @@ import { Eye, EyeOff } from "lucide-react";
 import { useNavigate, Link } from "react-router-dom";
 import { request } from "../services/api";
 import { toast } from "react-toastify";
-import { Context } from "../registrationpage/loginpages/Logincontext";
+import { Context } from "./loginpages/Logincontext";
 
 export default function Registration() {
 const { user } = useContext(Context);
   
   const navigate = useNavigate();
  useEffect(() => {
+  console.log(user)
   if (user) {
     navigate("/", { replace: true });
   }
@@ -49,6 +50,18 @@ const { user } = useContext(Context);
 
     if (password.length < 6) {
       return toast.warning("Password must be at least 6 characters");
+    }
+
+    if (!/[0-9]/.test(password)) {
+      return toast.warning("Password must contain at least one number");
+    }
+
+    if (!/[!@#$%^&*]/.test(password)) {
+      return toast.warning("Password must contain a special character");
+    }
+
+    if (!/^[A-Za-z0-9_]+$/.test(username)) {
+      return toast.warning("Username can only contain letters, numbers, and underscores");
     }
 
     if (password !== confirmPassword) {

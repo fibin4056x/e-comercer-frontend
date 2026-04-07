@@ -16,13 +16,7 @@ function Logincontext({ children }) {
     const restoreUser = async () => {
       try {
         console.log("🔄 Checking existing session...");
-
-        const profile = await request(
-          "/auth/profile",
-          "GET",
-          null,
-          true
-        );
+const profile = await request("/auth/profile", "GET");
 
         console.log("✅ Session restored:", profile);
 
@@ -54,7 +48,7 @@ function Logincontext({ children }) {
 
       try {
         console.log("🛒 Fetching cart...");
-        const data = await request("/cart", "GET", null, true);
+       const data = await request("/cart", "GET");
         setCart(data || { items: [] });
       } catch (error) {
         console.error("❌ Cart fetch error:", error);
@@ -72,7 +66,7 @@ function Logincontext({ children }) {
     try {
       console.log("🚪 Logging out...");
 
-      await request("/auth/logout", "POST", null, true);
+     await request("/auth/logout", "POST");
 
       setUser(null);
       setCart({ items: [] });

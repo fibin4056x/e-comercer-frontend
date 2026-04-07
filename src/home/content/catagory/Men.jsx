@@ -13,7 +13,10 @@ export default function Men() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const BASE_URL = "https://e-comerce-backend-cfkk.onrender.com";
+ const BASE_URL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://e-comerce-backend-cfkk.onrender.com";
 
   const { user } = useContext(Logincontext);
   const {
@@ -27,8 +30,19 @@ export default function Men() {
     const fetchMen = async () => {
       try {
         setLoading(true);
-        const products = await request("/products?category=men");
-        setData(products || []);
+
+        const res = await request("/products?category=men");
+
+        const productsData =
+          res?.products || res?.data?.products || res?.data || res;
+
+        if (Array.isArray(productsData)) {
+          setData(productsData);
+        } else if (res && typeof res === "object" && Array.isArray(res.products)) {
+          setData(res.products);
+        } else {
+          setData([]);
+        }
       } catch (err) {
         setError("Failed to load men's products");
       } finally {
