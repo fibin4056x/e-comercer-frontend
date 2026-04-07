@@ -11,6 +11,10 @@ const createEmptyVariant = () => ({
   stock: "0",
 });
 
+const allowedImageTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+const maxImageSize = 2 * 1024 * 1024;
+const maxImageCount = 5;
+
 const initialFormState = {
   name: "",
   brand: "",
@@ -140,7 +144,25 @@ export default function ProductEditorPage({ mode = "create" }) {
   };
 
   const handleFileChange = (event) => {
-    setSelectedFiles(Array.from(event.target.files || []));
+    const files = Array.from(event.target.files || []);
+
+    if (files.length > maxImageCount) {
+      toast.error("You can upload up to 5 images per product");
+      event.target.value = "";
+      return;
+    }
+
+    const invalidFile = files.find(
+      (file) => !allowedImageTypes.has(file.type) || file.size > maxImageSize
+    );
+
+    if (invalidFile) {
+      toast.error("Use JPG, PNG, or WEBP images up to 2MB each");
+      event.target.value = "";
+      return;
+    }
+
+    setSelectedFiles(files);
   };
 
   const handleSubmit = async (event) => {
@@ -389,7 +411,12 @@ export default function ProductEditorPage({ mode = "create" }) {
             </div>
 
             <label className="admin-upload-zone">
-              <input type="file" multiple accept="image/*" onChange={handleFileChange} />
+              <input
+                type="file"
+                multiple
+                accept="image/jpeg,image/png,image/webp"
+                onChange={handleFileChange}
+              />
               <ImagePlus size={18} />
               <div>
                 <strong>{selectedFiles.length ? `${selectedFiles.length} new image(s) selected` : "Upload product imagery"}</strong>

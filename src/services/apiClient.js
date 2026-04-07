@@ -24,9 +24,14 @@ export const getAssetUrl = (assetPath) => {
     return assetPath;
   }
 
-  const normalizedPath = String(assetPath).startsWith("/")
-    ? assetPath
-    : `/${assetPath}`;
+  const normalizedAssetPath = String(assetPath).replace(/\\/g, "/");
+  const uploadsIndex = normalizedAssetPath.toLowerCase().lastIndexOf("/uploads/");
+
+  const normalizedPath = uploadsIndex >= 0
+    ? normalizedAssetPath.slice(uploadsIndex)
+    : normalizedAssetPath.startsWith("/")
+      ? normalizedAssetPath
+      : `/${normalizedAssetPath}`;
 
   return `${API_BASE_URL}${normalizedPath}`;
 };
