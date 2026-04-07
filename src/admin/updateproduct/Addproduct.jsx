@@ -1,11 +1,18 @@
-import React, { useState, useMemo } from "react";
-import { request } from "../../services/api";
+import React, { useEffect, useState, useMemo } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
 import { toast } from "react-toastify";
-import "./AddProduct.css";
+import "./Updateproduct.css";
 
-export default function AddProduct() {
+axios.defaults.withCredentials = true;
+
+export default function UpdateProduct() {
+  const { id } = useParams();
+  const navigate = useNavigate();
 
   const [loading, setLoading] = useState(false);
+  const [images, setImages] = useState([]);
+  const [preview, setPreview] = useState([]);
 
   const [product, setProduct] = useState({
     name: "",
@@ -16,26 +23,43 @@ export default function AddProduct() {
     price: "",
     originalPrice: "",
     discount: 0,
-    variants: [{ size: "", color: "", stock: 0 }],
+    variants: [],
     isFeatured: false,
     isNewArrival: false,
   });
 
-  const [images, setImages] = useState([]);
-  const [preview, setPreview] = useState([]);
+  /* ================= FETCH PRODUCT ================= */
 
-  /* =========================
-     INPUT HANDLER
-  ========================= */
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const res = await axios.get(
+          `https://e-comerce-backend-cfkk.onrender.com/api/products/${id}`
+        );
+
+        setProduct({
+          ...res.data,
+          variants: res.data.variants || [],
+        });
+
+        // ✅ FIXED PREVIEW (Cloudinary ready)
+        if (res.data.images?.length > 0) {
+          setPreview(res.data.images);
+        }
+
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to load product");
+      }
+    };
+
+    fetchProduct();
+  }, [id]);
+
+  /* ================= HANDLERS ================= */
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-
-    if (name === "discount") {
-      const safeValue = Math.min(100, Math.max(0, Number(value)));
-      setProduct({ ...product, discount: safeValue });
-      return;
-    }
 
     setProduct({
       ...product,
@@ -43,26 +67,30 @@ export default function AddProduct() {
     });
   };
 
-  /* =========================
-     VARIANTS
-  ========================= */
-
   const handleVariantChange = (index, field, value) => {
     const updated = [...product.variants];
-    updated[index][field] = field === "stock" ? Number(value) : value;
+    updated[index][field] =
+      field === "stock" ? Number(value) : value;
+
     setProduct({ ...product, variants: updated });
   };
 
   const addVariant = () => {
     setProduct({
       ...product,
-      variants: [...product.variants, { size: "", color: "", stock: 0 }],
+      variants: [
+        ...product.variants,
+        { size: "", color: "", stock: 0 },
+      ],
     });
   };
 
-  /* =========================
-     IMAGE UPLOAD
-  ========================= */
+  const removeVariant = (index) => {
+    const updated = product.variants.filter(
+      (_, i) => i !== index
+    );
+    setProduct({ ...product, variants: updated });
+  };
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
@@ -74,80 +102,19 @@ export default function AddProduct() {
     setPreview(previews);
   };
 
-  /* =========================
-     FINAL PRICE CALCULATION
-  ========================= */
-
   const finalPrice = useMemo(() => {
     const price = Number(product.price) || 0;
     const discount = Number(product.discount) || 0;
-
-    if (discount > 100) return price;
-    return Math.max(0, price - (price * discount) / 100);
+    return Math.max(
+      0,
+      price - (price * discount) / 100
+    );
   }, [product.price, product.discount]);
 
-  /* =========================
-     VALIDATION
-  ========================= */
-
-  const validateProduct = () => {
-    const errors = [];
-
-    if (!product.name || product.name.trim().length < 3) {
-      errors.push("Product name must be at least 3 characters");
-    }
-
-    if (!product.price || Number(product.price) <= 0) {
-      errors.push("Price must be greater than 0");
-    }
-
-    if (
-      product.originalPrice &&
-      Number(product.originalPrice) < Number(product.price)
-    ) {
-      errors.push("Original price cannot be less than selling price");
-    }
-
-    if (product.discount < 0 || product.discount > 100) {
-      errors.push("Discount must be between 0 and 100");
-    }
-
-    if (images.length === 0) {
-      errors.push("At least one product image is required");
-    }
-
-    if (product.variants.length === 0) {
-      errors.push("At least one variant is required");
-    }
-
-    product.variants.forEach((variant, index) => {
-      if (!variant.size) {
-        errors.push(`Variant ${index + 1}: Size is required`);
-      }
-      if (!variant.color) {
-        errors.push(`Variant ${index + 1}: Color is required`);
-      }
-      if (variant.stock < 0) {
-        errors.push(`Variant ${index + 1}: Stock cannot be negative`);
-      }
-    });
-
-    return errors;
-  };
-
-  /* =========================
-     SUBMIT
-  ========================= */
+  /* ================= UPDATE ================= */
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const validationErrors = validateProduct();
-
-    if (validationErrors.length > 0) {
-      validationErrors.forEach((err) => toast.error(err));
-      return;
-    }
 
     try {
       setLoading(true);
@@ -156,7 +123,10 @@ export default function AddProduct() {
 
       Object.keys(product).forEach((key) => {
         if (key === "variants") {
-          formData.append("variants", JSON.stringify(product.variants));
+          formData.append(
+            "variants",
+            JSON.stringify(product.variants)
+          );
         } else {
           formData.append(key, product[key]);
         }
@@ -166,131 +136,214 @@ export default function AddProduct() {
         formData.append("images", img);
       });
 
-      const response = await request("/products", "POST", formData);
+      await axios.put(
+        `https://e-comerce-backend-cfkk.onrender.com/api/products/${id}`,
+        formData
+      );
 
-      toast.success("Product Created Successfully");
-      console.log("✅ Product Created:", response);
+      toast.success("Product updated successfully");
+      navigate("/admin/products");
 
     } catch (error) {
-      console.error("🔥 Upload Error:", error);
-
-      if (error.response) {
-        toast.error(error.response.data.message || "Server error");
-      } else if (error.request) {
-        toast.error("Server not responding");
-      } else {
-        toast.error("Unexpected error occurred");
-      }
-
+      console.error(error);
+      toast.error("Update failed");
     } finally {
       setLoading(false);
     }
   };
 
-  /* =========================
-     UI (UNCHANGED)
-  ========================= */
+  if (!product) return <h2>Loading...</h2>;
 
   return (
-    <div className="ss-add-product-container">
-      <h2 className="ss-add-product-title">Add New Product</h2>
+    <div className="update-wrapper">
+      <form onSubmit={handleSubmit} className="update-card">
 
-      <form onSubmit={handleSubmit} className="ss-add-product-form">
+        <h2>Update Product</h2>
 
-        <div className="ss-add-product-section">
+        {/* BASIC INFO */}
+        <div className="section">
           <h3>Basic Information</h3>
-          <input name="name" placeholder="Product Name" required onChange={handleChange}/>
-          <input name="brand" placeholder="Brand" onChange={handleChange}/>
+
+          <input
+            name="name"
+            value={product.name}
+            onChange={handleChange}
+            placeholder="Product Name"
+          />
+
+          <input
+            name="brand"
+            value={product.brand}
+            onChange={handleChange}
+            placeholder="Brand"
+          />
+
           <select
             name="category"
             value={product.category}
             onChange={handleChange}
-            required
           >
             <option value="">Select Category</option>
             <option value="Men">Men</option>
             <option value="Women">Women</option>
           </select>
-          <input name="type" placeholder="Type" onChange={handleChange}/>
-          <textarea name="description" placeholder="Description" onChange={handleChange}/>
+
+          <input
+            name="type"
+            value={product.type}
+            onChange={handleChange}
+            placeholder="Type"
+          />
+
+          <textarea
+            name="description"
+            value={product.description}
+            onChange={handleChange}
+            placeholder="Description"
+          />
         </div>
 
-        <div className="ss-add-product-section">
+        {/* PRICING */}
+        <div className="section">
           <h3>Pricing</h3>
-          <input type="number" name="price" placeholder="Price" required onChange={handleChange}/>
-          <input type="number" name="originalPrice" placeholder="Original Price" onChange={handleChange}/>
+
+          <input
+            type="number"
+            name="price"
+            value={product.price}
+            onChange={handleChange}
+            placeholder="Price"
+          />
+
+          <input
+            type="number"
+            name="originalPrice"
+            value={product.originalPrice}
+            onChange={handleChange}
+            placeholder="Original Price"
+          />
+
           <input
             type="number"
             name="discount"
-            placeholder="Discount %"
-            min="0"
-            max="100"
+            value={product.discount}
             onChange={handleChange}
+            placeholder="Discount %"
           />
 
-          {product.price && (
-            <p style={{ marginTop: "10px", fontWeight: "600" }}>
-              Final Price: ₹{finalPrice}
-            </p>
-          )}
+          <p className="final-price">
+            Final Price: ₹{finalPrice}
+          </p>
         </div>
 
-        <div className="ss-add-product-section">
+        {/* VARIANTS */}
+        <div className="section">
           <h3>Variants</h3>
+
           {product.variants.map((variant, index) => (
-            <div key={index} className="ss-add-product-variant-row">
+            <div key={index} className="variant-row">
               <input
-                type="number"
+                value={variant.size}
+                onChange={(e) =>
+                  handleVariantChange(
+                    index,
+                    "size",
+                    e.target.value
+                  )
+                }
                 placeholder="Size"
-                required
-                onChange={(e)=>handleVariantChange(index,"size",e.target.value)}
               />
+
               <input
+                value={variant.color}
+                onChange={(e) =>
+                  handleVariantChange(
+                    index,
+                    "color",
+                    e.target.value
+                  )
+                }
                 placeholder="Color"
-                required
-                onChange={(e)=>handleVariantChange(index,"color",e.target.value)}
               />
+
               <input
                 type="number"
+                value={variant.stock}
+                onChange={(e) =>
+                  handleVariantChange(
+                    index,
+                    "stock",
+                    e.target.value
+                  )
+                }
                 placeholder="Stock"
-                required
-                onChange={(e)=>handleVariantChange(index,"stock",e.target.value)}
               />
+
+              <button
+                type="button"
+                onClick={() => removeVariant(index)}
+                className="remove-btn"
+              >
+                ✕
+              </button>
             </div>
           ))}
-          <button type="button" className="ss-add-product-variant-btn" onClick={addVariant}>
+
+          <button
+            type="button"
+            onClick={addVariant}
+            className="add-variant"
+          >
             + Add Variant
           </button>
         </div>
 
-        <div className="ss-add-product-section">
-          <h3>Upload Images</h3>
-          <input type="file" multiple onChange={handleImageUpload} />
-          <div className="ss-add-product-preview">
-            {preview.map((img, index) => (
-              <img key={index} src={img} alt="preview" />
+        {/* IMAGES */}
+        <div className="section">
+          <h3>Images</h3>
+
+          <input
+            type="file"
+            multiple
+            onChange={handleImageUpload}
+          />
+
+          <div className="preview-grid">
+            {preview.map((img, i) => (
+              <img key={i} src={img} alt="preview" />
             ))}
           </div>
         </div>
 
-        <div className="ss-add-product-section ss-add-product-flags">
+        {/* FLAGS */}
+        <div className="section flags">
           <label>
-            <input type="checkbox" name="isFeatured" onChange={handleChange}/>
+            <input
+              type="checkbox"
+              name="isFeatured"
+              checked={product.isFeatured}
+              onChange={handleChange}
+            />
             Featured
           </label>
 
           <label>
-            <input type="checkbox" name="isNewArrival" onChange={handleChange}/>
+            <input
+              type="checkbox"
+              name="isNewArrival"
+              checked={product.isNewArrival}
+              onChange={handleChange}
+            />
             New Arrival
           </label>
         </div>
 
         <button
           type="submit"
-          className="ss-add-product-submit-btn"
+          className="update-btn"
           disabled={loading}
         >
-          {loading ? "Creating..." : "Create Product"}
+          {loading ? "Updating..." : "Update Product"}
         </button>
 
       </form>

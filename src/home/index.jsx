@@ -1,9 +1,10 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { useContext, useState } from "react";
-import { Context } from "../registrationpage/loginpages/Logincontext";
-import { WishlistContext } from "../registrationpage/wishlisht/wishlistcontext";
-import { OrderContext } from "./content/orderpage/ordercontext";
+import { Context } from "../registrationpage/loginpages/LogincontextV2";
+import { WishlistContext } from "../registrationpage/wishlisht/wishlistcontextV2";
+import { OrderContext } from "./content/orderpage/ordercontextV2";
 import {
+  ChevronRight,
   LogIn,
   LogOut,
   ShoppingCart,
@@ -17,7 +18,7 @@ export default function Index() {
   const context = useContext(Context);
   const { user, logout, cart } = context || {};
 
-  const { Order } = useContext(OrderContext) || {};
+  const { orders = [] } = useContext(OrderContext) || {};
   const { wishlist } = useContext(WishlistContext) || {};
 
   const [menuOpen, setMenuOpen] = useState(false);
@@ -33,7 +34,7 @@ export default function Index() {
       0
     ) ?? 0;
 
-  const orderCount = Order?.length || 0;
+  const orderCount = orders.length || 0;
   const wishlistCount = wishlist?.length || 0;
 
   /* =========================
@@ -53,14 +54,19 @@ export default function Index() {
   ========================= */
 
   return (
-    <div>
+    <div className="store-app-shell">
       <nav className="navbar">
         <div className="navbar-left">
           <Link to="/" className="brand" onClick={handleLinkClick}>
-            <span>sole society</span>
+            <span className="brand-mark">SS</span>
+            <span className="brand-copy">
+              <strong>Sole Society</strong>
+              <small>Elevated essentials</small>
+            </span>
           </Link>
 
           <button
+            type="button"
             className="menu-toggle"
             onClick={() => setMenuOpen((prev) => !prev)}
           >
@@ -82,7 +88,7 @@ export default function Index() {
           </NavLink>
 
           <NavLink
-            to="/cart"
+            to={user ? "/cart" : "/login"}
             onClick={handleLinkClick}
             className="nav-icon"
           >
@@ -115,7 +121,7 @@ export default function Index() {
           </NavLink>
 
           <NavLink
-            to="/wishlist"
+            to={user ? "/wishlist" : "/login"}
             onClick={handleLinkClick}
             className="nav-icon"
           >
@@ -142,6 +148,7 @@ export default function Index() {
               </span>
 
               <button
+                type="button"
                 className="logout-btn"
                 onClick={() => setShowLogoutModal(true)}
               >
@@ -153,6 +160,15 @@ export default function Index() {
       </nav>
 
       <div className="page-content">
+        <section className="store-top-banner">
+          <p>
+            New-season footwear, refined basics, and premium admin controls for every order cycle.
+          </p>
+          <Link to="/men" onClick={handleLinkClick}>
+            Explore edit
+            <ChevronRight size={14} />
+          </Link>
+        </section>
         <Outlet />
       </div>
 
@@ -168,6 +184,7 @@ export default function Index() {
 
             <div className="modal-buttons">
               <button
+                type="button"
                 className="cancel-btn"
                 onClick={() => setShowLogoutModal(false)}
               >
@@ -175,6 +192,7 @@ export default function Index() {
               </button>
 
               <button
+                type="button"
                 className="confirm-btn"
                 onClick={confirmLogout}
               >

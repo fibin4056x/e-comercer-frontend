@@ -8,8 +8,6 @@ export default function RemoveProduct() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-  
-
   useEffect(() => {
     fetchProducts();
   }, []);
@@ -19,7 +17,10 @@ export default function RemoveProduct() {
       const res = await axios.get(
         "https://e-comerce-backend-cfkk.onrender.com/api/products"
       );
-      setProducts(res.data);
+
+      // ✅ FIXED
+      setProducts(res.data.products);
+
     } catch (err) {
       console.error("Fetch error:", err);
       toast.error("Failed to fetch products");
@@ -36,16 +37,18 @@ export default function RemoveProduct() {
 
     try {
       await axios.delete(
-  `https://e-comerce-backend-cfkk.onrender.com/api/products/${selectedProduct._id}`,
-  {
-    withCredentials: true,  // 🔥 this is what you need
-  }
-);
+        `https://e-comerce-backend-cfkk.onrender.com/api/products/${selectedProduct._id}`,
+        {
+          withCredentials: true,
+        }
+      );
 
       toast.success(`"${selectedProduct.name}" deleted`);
+
       setProducts(
         products.filter((p) => p._id !== selectedProduct._id)
       );
+
       setConfirmOpen(false);
       setSelectedProduct(null);
 
@@ -72,10 +75,19 @@ export default function RemoveProduct() {
         <div className="product-grid">
           {products.map((product) => (
             <div key={product._id} className="product-card">
+              
+              {/* ✅ FIXED IMAGE */}
               <img
-                src={`https://e-comerce-backend-cfkk.onrender.com${product.images?.[0]}`}
+                src={
+                  product.images?.[0]
+                    ? product.images[0].startsWith("http")
+                      ? product.images[0] // Cloudinary
+                      : `https://e-comerce-backend-cfkk.onrender.com${product.images[0]}`
+                    : "/placeholder.png"
+                }
                 alt={product.name}
               />
+
               <h4>{product.name}</h4>
               <p>₹{product.price}</p>
 

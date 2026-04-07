@@ -34,7 +34,7 @@ export default function UpdateProduct() {
     const fetchProduct = async () => {
       try {
         const res = await axios.get(
-          `https://e-comerce-backend-cfkk.onrender.com${id}`
+          `https://e-comerce-backend-cfkk.onrender.com/api/products/${id}`
         );
 
         setProduct({
@@ -42,12 +42,9 @@ export default function UpdateProduct() {
           variants: res.data.variants || [],
         });
 
+        // ✅ FIXED PREVIEW (Cloudinary ready)
         if (res.data.images?.length > 0) {
-          setPreview(
-            res.data.images.map(
-              (img) => `https://e-comerce-backend-cfkk.onrender.com${img}`
-            )
-          );
+          setPreview(res.data.images);
         }
 
       } catch (err) {

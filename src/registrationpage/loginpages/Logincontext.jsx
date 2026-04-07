@@ -1,11 +1,21 @@
-import React, { createContext, useEffect, useState } from "react";
-import { request } from "../../services/api";
+/* eslint-disable react-refresh/only-export-components */
+import React, { createContext, useCallback, useEffect, useMemo, useState } from "react";
+import { request } from "../../services/apiClient";
 
 export const Context = createContext();
 
+const getStoredUser = () => {
+  try {
+    const rawUser = localStorage.getItem("user");
+    return rawUser ? JSON.parse(rawUser) : null;
+  } catch {
+    return null;
+  }
+};
+
 function Logincontext({ children }) {
-  const [user, setUser] = useState(null);
-  const [cart, setCart] = useState({ items: [] });
+  const [user, setUser] = useState(getStoredUser);
+  const [cart, setCart] = useState({ items: [], total: 0 });
   const [loadingUser, setLoadingUser] = useState(true);
 
   /* =========================
