@@ -2,9 +2,10 @@ import { useContext, useDeferredValue, useEffect, useMemo, useRef, useState } fr
 import { Heart, Search, SlidersHorizontal, Sparkles, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import SmartImage from "../../../components/SmartImage";
 import { Context as Logincontext } from "../../../registrationpage/loginpages/LogincontextV2";
 import { WishlistContext } from "../../../registrationpage/wishlisht/wishlistcontextV2";
-import { getAssetUrl, request } from "../../../services/apiClient";
+import { request } from "../../../services/apiClient";
 import formatCurrency from "../../../utilitis/formatCurrency";
 
 const PAGE_SIZE = 24;
@@ -268,8 +269,8 @@ export default function PremiumCatalogPage({
 
               <Link to={`/product/${item._id}`} className="product-card-link">
                 <div className="product-image-container">
-                  <img
-                    src={getAssetUrl(item.images?.[0])}
+                  <SmartImage
+                    assetPath={item.images?.[0]}
                     alt={item.name}
                     className="product-image"
                     loading="lazy"

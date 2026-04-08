@@ -1,12 +1,58 @@
-const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0"]);
+const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1"]);
 
-export const API_BASE_URL =
+const normalizeBaseUrl = (value) =>
+  String(value || "")
+    .trim()
+    .replace(/\/+$/, "");
+
+const normalizeApiPath = (path = "") => {
+  const value = String(path || "").trim();
+
+  if (!value) {
+    return "";
+  }
+
+  return value.startsWith("/") ? value : `/${value}`;
+};
+
+const normalizeAssetPath = (assetPath) => {
+  const normalizedAssetPath = String(assetPath).replace(/\\/g, "/");
+  const uploadsIndex = normalizedAssetPath.toLowerCase().lastIndexOf("/uploads/");
+
+  if (uploadsIndex >= 0) {
+    return normalizedAssetPath.slice(uploadsIndex);
+  }
+
+  return normalizedAssetPath.startsWith("/")
+    ? normalizedAssetPath
+    : `/${normalizedAssetPath}`;
+};
+
+const REMOTE_API_BASE_URL = normalizeBaseUrl(
+  import.meta?.env?.VITE_REMOTE_API_BASE_URL ||
+    "https://e-comerce-backend-cfkk.onrender.com"
+);
+
+export const API_BASE_URL = normalizeBaseUrl(
   import.meta?.env?.VITE_API_BASE_URL ||
-  (LOCAL_HOSTS.has(window.location.hostname)
-    ? "http://localhost:5000"
-    : "https://e-comerce-backend-cfkk.onrender.com");
+    (LOCAL_HOSTS.has(window.location.hostname)
+      ? "http://localhost:5000"
+      : REMOTE_API_BASE_URL)
+);
 
 const API_PREFIX = `${API_BASE_URL}/api`;
+
+export const getApiUrl = (path = "") => {
+  const normalizedPath = normalizeApiPath(path);
+
+  if (!normalizedPath) {
+    return API_PREFIX;
+  }
+
+  return normalizedPath === "/api" || normalizedPath.startsWith("/api/")
+    ? `${API_BASE_URL}${normalizedPath}`
+    : `${API_PREFIX}${normalizedPath}`;
+};
 
 const isAuthRoute = (url) =>
   url.startsWith("/auth/login") ||
@@ -20,20 +66,36 @@ export const getAssetUrl = (assetPath) => {
     return "/placeholder.png";
   }
 
-  if (/^https?:\/\//i.test(assetPath)) {
+  if (/^(?:https?:|blob:|data:)/i.test(assetPath)) {
     return assetPath;
   }
 
-  const normalizedAssetPath = String(assetPath).replace(/\\/g, "/");
-  const uploadsIndex = normalizedAssetPath.toLowerCase().lastIndexOf("/uploads/");
+  return `${API_BASE_URL}${normalizeAssetPath(assetPath)}`;
+};
 
-  const normalizedPath = uploadsIndex >= 0
-    ? normalizedAssetPath.slice(uploadsIndex)
-    : normalizedAssetPath.startsWith("/")
-      ? normalizedAssetPath
-      : `/${normalizedAssetPath}`;
+export const getAssetCandidates = (assetPath, fallbackAsset = "/placeholder.png") => {
+  if (!assetPath) {
+    return [fallbackAsset];
+  }
 
-  return `${API_BASE_URL}${normalizedPath}`;
+  if (/^(?:https?:|blob:|data:)/i.test(assetPath)) {
+    return [assetPath, fallbackAsset].filter(Boolean);
+  }
+
+  const normalizedPath = normalizeAssetPath(assetPath);
+
+  const candidates = [`${API_BASE_URL}${normalizedPath}`];
+
+  if (
+    normalizedPath.toLowerCase().startsWith("/uploads/") &&
+    API_BASE_URL !== REMOTE_API_BASE_URL
+  ) {
+    candidates.push(`${REMOTE_API_BASE_URL}${normalizedPath}`);
+  }
+
+  candidates.push(fallbackAsset);
+
+  return [...new Set(candidates.filter(Boolean))];
 };
 
 const parseResponseBody = async (response) => {
@@ -59,7 +121,7 @@ export const request = async (url, method = "GET", body = null) => {
   const isFormData = body instanceof FormData;
 
   const makeRequest = async () => {
-    const response = await fetch(`${API_PREFIX}${url}`, {
+    const response = await fetch(getApiUrl(url), {
       method,
       credentials: "include",
       headers: isFormData ? undefined : { "Content-Type": "application/json" },
@@ -84,7 +146,7 @@ export const request = async (url, method = "GET", body = null) => {
 
   if (result.response.status === 401 && !isAuthRoute(url)) {
     try {
-      const refreshResponse = await fetch(`${API_PREFIX}/auth/refresh`, {
+      const refreshResponse = await fetch(getApiUrl("/auth/refresh"), {
         method: "POST",
         credentials: "include",
       });

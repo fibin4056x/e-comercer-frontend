@@ -3,9 +3,10 @@ import { useForm } from "react-hook-form";
 import { getNames } from "country-list";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import SmartImage from "../../../components/SmartImage";
 import { Context } from "../../../registrationpage/loginpages/LogincontextV2";
 import { OrderContext } from "../orderpage/ordercontextV2";
-import { getAssetUrl, request } from "../../../services/apiClient";
+import { request } from "../../../services/apiClient";
 import formatCurrency from "../../../utilitis/formatCurrency";
 
 const countries = getNames();
@@ -185,8 +186,8 @@ export default function CheckoutPage() {
               key={`${item.product?._id}-${item.size}-${item.color}`}
               className="checkout-item-card"
             >
-              <img
-                src={getAssetUrl(item.product?.images?.[0])}
+              <SmartImage
+                assetPath={item.product?.images?.[0]}
                 alt={item.product?.name}
                 className="checkout-item-image"
                 loading="lazy"

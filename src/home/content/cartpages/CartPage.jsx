@@ -2,8 +2,9 @@ import { useContext, useMemo, useState } from "react";
 import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import SmartImage from "../../../components/SmartImage";
 import { Context } from "../../../registrationpage/loginpages/LogincontextV2";
-import { getAssetUrl, request } from "../../../services/apiClient";
+import { request } from "../../../services/apiClient";
 import formatCurrency from "../../../utilitis/formatCurrency";
 
 export default function CartPage() {
@@ -100,8 +101,8 @@ export default function CartPage() {
 
             return (
               <article key={itemKey} className="cart-item-card">
-                <img
-                  src={getAssetUrl(item.product?.images?.[0])}
+                <SmartImage
+                  assetPath={item.product?.images?.[0]}
                   alt={item.product?.name}
                   className="cart-item-image"
                   loading="lazy"

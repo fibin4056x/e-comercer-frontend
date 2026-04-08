@@ -8,8 +8,9 @@ import {
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
+import SmartImage from "../../../components/SmartImage";
 import { Context } from "../../../registrationpage/loginpages/LogincontextV2";
-import { getAssetUrl, request } from "../../../services/apiClient";
+import { request } from "../../../services/apiClient";
 import formatCurrency from "../../../utilitis/formatCurrency";
 
 const renderStars = (rating, className = "") =>
@@ -48,7 +49,7 @@ export default function ProductDetailsPage() {
       setLoading(true);
       const data = await request(`/products/${id}`);
       setProduct(data);
-      setMainImage(getAssetUrl(data.images?.[0]));
+      setMainImage(data.images?.[0] || "");
     } catch (error) {
       toast.error(error.message || "Unable to load product");
     } finally {
@@ -253,8 +254,8 @@ export default function ProductDetailsPage() {
     <div className="store-section product-detail-layout">
       <section className="product-gallery-panel">
         <div className="product-main-image-shell">
-          <img
-            src={mainImage}
+          <SmartImage
+            assetPath={mainImage}
             alt={product.name}
             className="product-main-image"
             decoding="async"
@@ -264,17 +265,15 @@ export default function ProductDetailsPage() {
 
         <div className="product-thumbnail-row">
           {(product.images || []).map((image) => {
-            const resolvedImage = getAssetUrl(image);
-
             return (
               <button
-                key={resolvedImage}
+                key={image}
                 type="button"
-                className={`product-thumbnail-button${resolvedImage === mainImage ? " product-thumbnail-button--active" : ""}`}
-                onClick={() => setMainImage(resolvedImage)}
+                className={`product-thumbnail-button${image === mainImage ? " product-thumbnail-button--active" : ""}`}
+                onClick={() => setMainImage(image)}
               >
-                <img
-                  src={resolvedImage}
+                <SmartImage
+                  assetPath={image}
                   alt={product.name}
                   className="product-thumbnail-image"
                   loading="lazy"

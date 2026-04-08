@@ -1,13 +1,10 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import { getAssetUrl, request } from "../../services/apiClient";
 import "./AdminProducts.css";
 
-axios.defaults.withCredentials = true;
-
 // ✅ Your REAL backend
-const BASE_URL = "https://e-comerce-backend-cfkk.onrender.com";
 
 export default function AdminProducts() {
   const [products, setProducts] = useState([]);
@@ -21,12 +18,9 @@ export default function AdminProducts() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(`${BASE_URL}/api/products`);
-
-      console.log("Admin Data Check:", res.data);
-
+      const data = await request("/products");
       const dataArray =
-        res.data?.products || (Array.isArray(res.data) ? res.data : []);
+        data?.products || (Array.isArray(data) ? data : []);
 
       setProducts(dataArray);
     } catch (err) {
@@ -41,11 +35,11 @@ export default function AdminProducts() {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
       // ✅ FIXED missing slash
-      await axios.delete(`${BASE_URL}/api/products/${id}`);
+      await request(`/products/${id}`, "DELETE");
       toast.success("Deleted successfully");
       fetchProducts();
-    } catch {
-      toast.error("Delete failed");
+    } catch (error) {
+      toast.error(error.message || "Delete failed");
     }
   };
 
@@ -65,7 +59,7 @@ export default function AdminProducts() {
           <div key={product._id} className="product-row">
             <img
               // ✅ FIXED image URL
-              src={`${BASE_URL}${product.images?.[0] || "/placeholder.png"}`}
+              src={getAssetUrl(product.images?.[0])}
               alt={product.name}
             />
 

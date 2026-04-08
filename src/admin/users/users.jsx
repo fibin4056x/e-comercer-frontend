@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import { toast } from "react-toastify";
+import { getAssetUrl, request } from "../../services/apiClient";
 import "./Users.css";
 
 export default function Users() {
@@ -11,10 +12,12 @@ export default function Users() {
   }, []);
 
   const fetchUsers = async () => {
-    const res = await axios.get("https://e-comerce-backend-cfkk.onrender.com/api/admin/users", {
-      withCredentials: true,
-    });
-    setUsers(res.data);
+    try {
+      const data = await request("/admin/users?limit=100");
+      setUsers(Array.isArray(data?.users) ? data.users : []);
+    } catch (error) {
+      toast.error(error.message || "Failed to load users");
+    }
   };
 
   const deleteUser = (id) => {
@@ -26,29 +29,31 @@ export default function Users() {
   };
 
   const changeRole = async (id, role) => {
-    await axios.patch(
-      `https://e-comerce-backend-cfkk.onrender.com/api/admin/users/${id}/role`,
-      { role },
-      { withCredentials: true }
-    );
-
-    setUsers(
-      users.map((u) => (u._id === id ? { ...u, role } : u))
-    );
+    try {
+      await request(`/admin/users/${id}/role`, "PATCH", { role });
+      setUsers((currentUsers) =>
+        currentUsers.map((user) =>
+          user._id === id ? { ...user, role } : user
+        )
+      );
+      toast.success("User role updated");
+    } catch (error) {
+      toast.error(error.message || "Failed to update role");
+    }
   };
 
   const toggleBan = async (id, banned) => {
-    await axios.patch(
-      `https://e-comerce-backend-cfkk.onrender.com/api/admin/users/${id}/ban`,
-      { banned },
-      { withCredentials: true }
-    );
-
-    setUsers(
-      users.map((u) =>
-        u._id === id ? { ...u, isBanned: banned } : u
-      )
-    );
+    try {
+      await request(`/admin/users/${id}/ban`, "PATCH", { banned });
+      setUsers((currentUsers) =>
+        currentUsers.map((user) =>
+          user._id === id ? { ...user, isBanned: banned } : user
+        )
+      );
+      toast.success(banned ? "User banned" : "User unbanned");
+    } catch (error) {
+      toast.error(error.message || "Failed to update user status");
+    }
   };
 
   const handleConfirm = async () => {
@@ -56,13 +61,16 @@ export default function Users() {
 
     const { id } = confirmAction;
 
-    await axios.delete(
-      `https://e-comerce-backend-cfkk.onrender.com/api/admin/users/${id}`,
-      { withCredentials: true }
-    );
-
-    setUsers(users.filter((u) => u._id !== id));
-    setConfirmAction(null);
+    try {
+      await request(`/admin/users/${id}`, "DELETE");
+      setUsers((currentUsers) =>
+        currentUsers.filter((user) => user._id !== id)
+      );
+      setConfirmAction(null);
+      toast.success("User deleted");
+    } catch (error) {
+      toast.error(error.message || "Failed to delete user");
+    }
   };
 
   return (
@@ -90,7 +98,7 @@ export default function Users() {
                 <td className="user-info">
                   {user.profileImage ? (
                     <img
-                      src={`https://e-comerce-backend-cfkk.onrender.com${user.profileImage}`}
+                      src={getAssetUrl(user.profileImage)}
                       alt="avatar"
                       className="avatar"
                     />

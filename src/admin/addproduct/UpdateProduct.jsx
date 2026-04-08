@@ -1,10 +1,8 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
 import { toast } from "react-toastify";
+import { getAssetUrl, request } from "../../services/apiClient";
 import "./Updateproduct.css";
-
-axios.defaults.withCredentials = true;
 
 export default function UpdateProduct() {
   const { id } = useParams();
@@ -33,18 +31,16 @@ export default function UpdateProduct() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await axios.get(
-          `https://e-comerce-backend-cfkk.onrender.com/api/products/${id}`
-        );
+        const res = await request(`/products/${id}`);
 
         setProduct({
-          ...res.data,
-          variants: res.data.variants || [],
+          ...res,
+          variants: res.variants || [],
         });
 
         // ✅ FIXED PREVIEW (Cloudinary ready)
-        if (res.data.images?.length > 0) {
-          setPreview(res.data.images);
+        if (res.images?.length > 0) {
+          setPreview(res.images.map((image) => getAssetUrl(image)));
         }
 
       } catch (err) {
@@ -136,10 +132,7 @@ export default function UpdateProduct() {
         formData.append("images", img);
       });
 
-      await axios.put(
-        `https://e-comerce-backend-cfkk.onrender.com/api/products/${id}`,
-        formData
-      );
+      await request(`/products/${id}`, "PUT", formData);
 
       toast.success("Product updated successfully");
       navigate("/admin/products");

@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import Cropper from "react-easy-crop";
 import { Camera, Pencil, Trash2 } from "lucide-react";
 import { Context } from "../../../registrationpage/loginpages/Logincontext";
-import { request } from "../../../services/api";
+import { getAssetUrl, request } from "../../../services/apiClient";
 import  getCroppedImg  from "../../../utilitis/cropImage";
 import "./Userdetails.css";
 
@@ -111,7 +111,7 @@ function Userdetails() {
             <div className="avatar">
               {user.profileImage ? (
                 <img
-                  src={`https://e-comerce-backend-cfkk.onrender.com${user.profileImage}`}
+                  src={getAssetUrl(user.profileImage)}
                   alt="Profile"
                   className="avatar-img"
                 />

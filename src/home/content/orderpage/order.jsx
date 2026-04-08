@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { request } from "../../../services/api";
+import { getAssetUrl, request } from "../../../services/apiClient";
 import { toast } from "react-toastify";
 import "./order.css";
 
@@ -7,11 +7,6 @@ export default function Orders() {
 
   const [orders,setOrders] = useState([]);
   const [loading,setLoading] = useState(true);
-
- const BASE_URL =
-  window.location.hostname === "localhost"
-    ? "http://localhost:5000"
-    : "https://e-comerce-backend-cfkk.onrender.com";
 
   /* ================= FETCH ORDERS ================= */
 
@@ -180,7 +175,7 @@ export default function Orders() {
               <div key={i} className="order-item">
 
                 <img
-                  src={item.image ? `${BASE_URL}${item.image}` : "/placeholder.png"}
+                  src={getAssetUrl(item.image)}
                   alt={item.name}
                   className="order-thumb"
                 />

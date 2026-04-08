@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import "./men.css"; // 🔥 reuse home styling
 import { WishlistContext } from "../../../registrationpage/wishlisht/wishlistcontext";
 import { Context as Logincontext } from "../../../registrationpage/loginpages/Logincontext";
-import { request } from "../../../services/api";
+import { getAssetUrl, request } from "../../../services/apiClient";
 import { toast } from "react-toastify";
 
 export default function Men() {
@@ -12,11 +12,6 @@ export default function Men() {
   const [sortOption, setSortOption] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
- const BASE_URL =
-  window.location.hostname === "localhost"
-    ? "http://localhost:5000"
-    : "https://e-comerce-backend-cfkk.onrender.com";
 
   const { user } = useContext(Logincontext);
   const {
@@ -148,11 +143,7 @@ export default function Men() {
             <Link to={`/product/${item._id}`}>
               <div className="product-image-container">
                 <img
-                  src={
-                    item.images?.[0]
-                      ? `${BASE_URL}${item.images[0]}`
-                      : "/placeholder.jpg"
-                  }
+                  src={getAssetUrl(item.images?.[0])}
                   alt={item.name}
                   className="product-image"
                 />

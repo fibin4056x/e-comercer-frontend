@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { toast } from "react-toastify";
+import { getAssetUrl, request } from "../../services/apiClient";
 import "./RemoveProduct.css";
 
 export default function RemoveProduct() {
@@ -14,12 +14,10 @@ export default function RemoveProduct() {
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get(
-        "https://e-comerce-backend-cfkk.onrender.com/api/products"
-      );
+      const data = await request("/products");
 
       // ✅ FIXED
-      setProducts(res.data.products);
+      setProducts(Array.isArray(data?.products) ? data.products : []);
 
     } catch (err) {
       console.error("Fetch error:", err);
@@ -36,12 +34,7 @@ export default function RemoveProduct() {
     if (!selectedProduct) return;
 
     try {
-      await axios.delete(
-        `https://e-comerce-backend-cfkk.onrender.com/api/products/${selectedProduct._id}`,
-        {
-          withCredentials: true,
-        }
-      );
+      await request(`/products/${selectedProduct._id}`, "DELETE");
 
       toast.success(`"${selectedProduct.name}" deleted`);
 
@@ -54,9 +47,7 @@ export default function RemoveProduct() {
 
     } catch (err) {
       console.error("Delete error:", err);
-      toast.error(
-        err.response?.data?.message || "Delete failed"
-      );
+      toast.error(err.message || "Delete failed");
     }
   };
 
@@ -78,13 +69,7 @@ export default function RemoveProduct() {
               
               {/* ✅ FIXED IMAGE */}
               <img
-                src={
-                  product.images?.[0]
-                    ? product.images[0].startsWith("http")
-                      ? product.images[0] // Cloudinary
-                      : `https://e-comerce-backend-cfkk.onrender.com${product.images[0]}`
-                    : "/placeholder.png"
-                }
+                src={getAssetUrl(product.images?.[0])}
                 alt={product.name}
               />
 

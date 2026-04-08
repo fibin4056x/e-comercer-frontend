@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext, useMemo } from "react";
-import { request } from "../../services/api";
+import { getAssetUrl, request } from "../../services/apiClient";
 import { Context } from "../../registrationpage/loginpages/Logincontext";
 import { toast } from "react-toastify";
 import { FiPackage, FiTruck, FiCheckCircle, FiXCircle, FiClock, FiTrendingUp, FiShoppingBag } from "react-icons/fi";
@@ -9,8 +9,6 @@ export default function Orderpage() {
   const { user } = useContext(Context);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const BASE_URL = "https://e-comerce-backend-cfkk.onrender.com";
-
   useEffect(() => {
     if (!user) return;
     const fetchOrders = async () => {
@@ -128,7 +126,7 @@ export default function Orderpage() {
                   {order.orderItems?.map((item, i) => (
                     <div key={i} className="scroll-item">
                       <div className="item-thumb">
-                        <img src={item.image ? `${BASE_URL}${item.image}` : "/placeholder.png"} alt="" />
+                        <img src={getAssetUrl(item.image)} alt="" />
                       </div>
                       <div className="item-meta">
                         <p className="item-name">{item.name}</p>

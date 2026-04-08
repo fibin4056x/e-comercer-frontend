@@ -3,14 +3,10 @@ import { Trash2 } from "lucide-react";
 import { WishlistContext } from "./wishlistcontext";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import { getAssetUrl } from "../../services/apiClient";
 import "./wishlist.css";
 
 function Wishlist() {
- const BASE_URL =
-  window.location.hostname === "localhost"
-    ? "http://localhost:5000"
-    : "https://e-comerce-backend-cfkk.onrender.com";;
-
   const {
     wishlist = [],
     removeFromWishlist,
@@ -62,11 +58,7 @@ function Wishlist() {
             >
               <div className="wishlist-image-wrapper">
                 <img
-                  src={
-                    item.images?.[0]
-                      ? `${BASE_URL}${item.images[0]}`
-                      : "https://via.placeholder.com/300"
-                  }
+                  src={getAssetUrl(item.images?.[0])}
                   alt={item.name}
                   className="wishlist-image"
                 />

@@ -4,18 +4,12 @@ import "./Home.css";
 import { Context as Logincontext } from "../registrationpage/loginpages/Logincontext";
 import { WishlistContext } from "../registrationpage/wishlisht/wishlistcontext";
 import { toast } from "react-toastify";
-import { request } from "../services/api";
+import { getAssetUrl, request } from "../services/apiClient";
 
 export default function Home() {
-  const BASE_URL =
-  window.location.hostname === "localhost"
-    ? "http://localhost:5000"
-    : "https://e-comerce-backend-cfkk.onrender.com";
   const [data, setData] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState("");
-  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
-  const [cardStyles, setCardStyles] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [wishlistLoading, setWishlistLoading] = useState(null);
@@ -65,26 +59,9 @@ export default function Home() {
 
   useEffect(() => {
     if (user) {
-      fetchWishlist();
+      fetchWishlist?.();
     }
-  }, [user]);
-
-  /* ================= CURSOR ================= */
-
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      setCursorPos({
-        x: e.clientX,
-        y: e.clientY
-      });
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-    };
-  }, []);
+  }, [user, fetchWishlist]);
 
   /* ================= WISHLIST ================= */
 
@@ -192,11 +169,7 @@ export default function Home() {
 
               <Link to={`/product/${item._id}`}>
                 <img
-                  src={
-                    item.images?.[0]
-                      ? `${BASE_URL}${item.images[0]}`
-                      : "https://via.placeholder.com/200"
-                  }
+                  src={getAssetUrl(item.images?.[0])}
                   alt={item.name}
                 />
 

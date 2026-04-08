@@ -3,15 +3,10 @@ import { Context } from "../../../registrationpage/loginpages/Logincontext";
 import "./cart.css";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
-import { request } from "../../../services/api";
+import { getAssetUrl, request } from "../../../services/apiClient";
 
 export default function Cart() {
   const { cart, user, setCart } = useContext(Context);
-
- const BASE_URL =
-  window.location.hostname === "localhost"
-    ? "http://localhost:5000"
-    : "https://e-comerce-backend-cfkk.onrender.com"; // 🔥 Added
 
   const items = Array.isArray(cart?.items) ? cart.items : [];
 
@@ -93,11 +88,7 @@ export default function Cart() {
               className="cart-row"
             >
               <img
-                src={
-                  item.product.images?.[0]
-                    ? `${BASE_URL}${item.product.images[0]}`
-                    : "/placeholder.png"
-                }
+                src={getAssetUrl(item.product.images?.[0])}
                 alt={item.product.name}
                 className="cart-img"
               />

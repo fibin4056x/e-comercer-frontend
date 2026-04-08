@@ -3,18 +3,13 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { Context } from "../../../registrationpage/loginpages/Logincontext";
 import { useNavigate } from "react-router-dom";
-import { request } from "../../../services/api";
+import { getAssetUrl, request } from "../../../services/apiClient";
 import "./checkout.css";
 
 export default function Checkout() {
   const { cart, user, setCart } = useContext(Context);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-
-  const BASE_URL =
-  window.location.hostname === "localhost"
-    ? "http://localhost:5000"
-    : "https://e-comerce-backend-cfkk.onrender.com";
 
   const items = Array.isArray(cart?.items) ? cart.items : [];
 
@@ -159,11 +154,7 @@ export default function Checkout() {
             <div key={index} className="summary-item">
 
               <img
-                src={
-                  item.product?.images?.[0]
-                    ? `${BASE_URL}${item.product.images[0]}`
-                    : "/placeholder.png"
-                }
+                src={getAssetUrl(item.product?.images?.[0])}
                 alt={item.product?.name}
                 className="summary-img"
               />

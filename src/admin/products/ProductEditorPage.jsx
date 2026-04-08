@@ -3,7 +3,8 @@ import { ImagePlus, Plus, Trash2 } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import AdminShell from "../components/AdminShell";
-import { getAssetUrl, request } from "../../services/apiClient";
+import SmartImage from "../../components/SmartImage";
+import { request } from "../../services/apiClient";
 
 const createEmptyVariant = () => ({
   size: "",
@@ -430,9 +431,9 @@ export default function ProductEditorPage({ mode = "create" }) {
                     <img key={url} src={url} alt="Selected preview" className="admin-image-preview" />
                   ))
                 : existingImages.map((image) => (
-                    <img
+                    <SmartImage
                       key={image}
-                      src={getAssetUrl(image)}
+                      assetPath={image}
                       alt="Current product"
                       className="admin-image-preview"
                     />

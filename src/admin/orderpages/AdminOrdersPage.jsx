@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Search, SlidersHorizontal } from "lucide-react";
 import { toast } from "react-toastify";
 import AdminShell from "../components/AdminShell";
-import { getAssetUrl, request } from "../../services/apiClient";
+import SmartImage from "../../components/SmartImage";
+import { request } from "../../services/apiClient";
 import formatCurrency from "../../utilitis/formatCurrency";
 
 const STATUS_OPTIONS = ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"];
@@ -232,8 +233,8 @@ export default function AdminOrdersPage() {
                   <div className="admin-order-item-list">
                     {(order.orderItems || []).map((item, index) => (
                       <div key={`${item.product}-${index}`} className="admin-order-item">
-                        <img
-                          src={getAssetUrl(item.image)}
+                        <SmartImage
+                          assetPath={item.image}
                           alt={item.name}
                           className="admin-product-thumb"
                           loading="lazy"

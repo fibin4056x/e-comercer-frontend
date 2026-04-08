@@ -2,8 +2,8 @@ import React, { useContext } from "react";
 import { Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import SmartImage from "../../components/SmartImage";
 import { WishlistContext } from "./wishlistcontextV2";
-import { getAssetUrl } from "../../services/apiClient";
 import formatCurrency from "../../utilitis/formatCurrency";
 import "./wishlist.css";
 
@@ -60,8 +60,8 @@ function WishlistPage() {
           <div key={item._id} className="wishlist-card">
             <Link to={`/product/${item._id}`} className="wishlist-link">
               <div className="wishlist-image-wrapper">
-                <img
-                  src={getAssetUrl(item.images?.[0])}
+                <SmartImage
+                  assetPath={item.images?.[0]}
                   alt={item.name}
                   className="wishlist-image"
                   loading="lazy"

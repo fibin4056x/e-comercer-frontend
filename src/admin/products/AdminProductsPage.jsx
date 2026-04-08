@@ -3,7 +3,8 @@ import { AlertTriangle, Boxes, Plus, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import AdminShell from "../components/AdminShell";
-import { getAssetUrl, request } from "../../services/apiClient";
+import SmartImage from "../../components/SmartImage";
+import { request } from "../../services/apiClient";
 import formatCurrency from "../../utilitis/formatCurrency";
 
 const getProductStock = (product) =>
@@ -168,8 +169,8 @@ export default function AdminProductsPage() {
 
               return (
                 <article key={product._id} className="admin-product-card">
-                  <img
-                    src={getAssetUrl(product.images?.[0])}
+                  <SmartImage
+                    assetPath={product.images?.[0]}
                     alt={product.name}
                     className="admin-product-hero"
                     loading="lazy"

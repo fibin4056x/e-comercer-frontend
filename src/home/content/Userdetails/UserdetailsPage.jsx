@@ -3,10 +3,11 @@ import Cropper from "react-easy-crop";
 import { Camera, Heart, LogOut, ShoppingBag, Trash2 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
+import SmartImage from "../../../components/SmartImage";
 import { Context } from "../../../registrationpage/loginpages/LogincontextV2";
 import { WishlistContext } from "../../../registrationpage/wishlisht/wishlistcontextV2";
 import { OrderContext } from "../orderpage/ordercontextV2";
-import { getAssetUrl, request } from "../../../services/apiClient";
+import { request } from "../../../services/apiClient";
 import getCroppedImg from "../../../utilitis/cropImage";
 
 export default function UserdetailsPage() {
@@ -92,8 +93,8 @@ export default function UserdetailsPage() {
         <div className="profile-header">
           <div className="profile-avatar-shell">
             {user.profileImage ? (
-              <img
-                src={getAssetUrl(user.profileImage)}
+              <SmartImage
+                assetPath={user.profileImage}
                 alt={user.username}
                 className="profile-avatar-image"
               />

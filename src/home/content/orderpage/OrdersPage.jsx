@@ -1,8 +1,8 @@
 import { useContext, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
+import SmartImage from "../../../components/SmartImage";
 import { OrderContext } from "./ordercontextV2";
-import { getAssetUrl } from "../../../services/apiClient";
 import formatCurrency from "../../../utilitis/formatCurrency";
 
 const CANCELABLE_STATUSES = new Set(["Pending", "Processing"]);
@@ -91,8 +91,8 @@ export default function OrdersPage() {
             <div className="checkout-item-list">
               {(order.orderItems || []).map((item, index) => (
                 <article key={`${item.product}-${index}`} className="checkout-item-card">
-                  <img
-                    src={getAssetUrl(item.image)}
+                  <SmartImage
+                    assetPath={item.image}
                     alt={item.name}
                     className="checkout-item-image"
                     loading="lazy"

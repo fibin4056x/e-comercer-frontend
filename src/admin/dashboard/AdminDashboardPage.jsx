@@ -10,7 +10,8 @@ import {
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import AdminShell from "../components/AdminShell";
-import { getAssetUrl, request } from "../../services/apiClient";
+import SmartImage from "../../components/SmartImage";
+import { request } from "../../services/apiClient";
 import formatCurrency from "../../utilitis/formatCurrency";
 
 const monthFormatter = new Intl.DateTimeFormat("en-US", {
@@ -247,8 +248,8 @@ export default function AdminDashboardPage() {
                 <div className="admin-product-list">
                   {topProducts.map((product) => (
                     <div key={`${product.name}-${product.totalSold}`} className="admin-product-row">
-                      <img
-                        src={getAssetUrl(product.images?.[0])}
+                      <SmartImage
+                        assetPath={product.images?.[0]}
                         alt={product.name}
                         className="admin-product-thumb"
                         loading="lazy"

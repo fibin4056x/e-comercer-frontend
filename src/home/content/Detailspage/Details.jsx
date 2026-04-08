@@ -1,14 +1,13 @@
 import React, { useContext, useEffect, useState, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import "./Details.css";
 import { Context } from "../../../registrationpage/loginpages/Logincontext";
 import { toast } from "react-toastify";
-import { request } from "../../../services/api";
+import { getAssetUrl, request } from "../../../services/apiClient";
 
 function Details() {
   const { id } = useParams();
-  const navigate = useNavigate();
-  const { user, cart, setCart } = useContext(Context);
+  const { user, setCart } = useContext(Context);
 
   const [product, setProduct] = useState(null);
   const [mainImage, setMainImage] = useState("");
@@ -20,11 +19,6 @@ function Details() {
 const [reviewRating, setReviewRating] = useState(0);
 const [reviewComment, setReviewComment] = useState("");
 const [editingReviewId, setEditingReviewId] = useState(null);
-  const BASE_URL =
-  window.location.hostname === "localhost"
-    ? "http://localhost:5000"
-    : "https://e-comerce-backend-cfkk.onrender.com";
-
   /* ================= FETCH PRODUCT ================= */
 
   useEffect(() => {
@@ -34,11 +28,7 @@ const [editingReviewId, setEditingReviewId] = useState(null);
         const data = await request(`/products/${id}`);
         setProduct(data);
 
-        setMainImage(
-          data.images?.[0]
-            ? `${BASE_URL}${data.images[0]}`
-            : "/placeholder.png"
-        );
+        setMainImage(getAssetUrl(data.images?.[0]));
       } catch {
         toast.error("Failed to load product");
       } finally {
@@ -210,7 +200,7 @@ const renderStars = (rating = 0) => {
   {product.images?.length > 1 && (
     <div className="thumbnail-row">
       {product.images.map((img, index) => {
-        const fullImg = `${BASE_URL}${img}`;
+        const fullImg = getAssetUrl(img);
         return (
           <div
             key={index}
