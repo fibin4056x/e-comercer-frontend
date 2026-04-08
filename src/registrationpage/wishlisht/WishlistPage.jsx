@@ -64,6 +64,8 @@ function WishlistPage() {
                   src={getAssetUrl(item.images?.[0])}
                   alt={item.name}
                   className="wishlist-image"
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
 

@@ -21,6 +21,7 @@ export default function CatalogPage({
   const [wishlistLoading, setWishlistLoading] = useState(null);
 
   const { user } = useContext(Logincontext) || {};
+  const isAdmin = user?.role === "admin";
   const {
     wishlist = [],
     addToWishlist,
@@ -65,16 +66,16 @@ export default function CatalogPage({
       product?.name?.toLowerCase().includes(normalizedSearch)
     );
 
-    if (sortOption === "lowtohigh") {
+    if (isAdmin && sortOption === "lowtohigh") {
       return [...nextProducts].sort((a, b) => a.price - b.price);
     }
 
-    if (sortOption === "hightolow") {
+    if (isAdmin && sortOption === "hightolow") {
       return [...nextProducts].sort((a, b) => b.price - a.price);
     }
 
     return nextProducts;
-  }, [products, searchTerm, sortOption]);
+  }, [isAdmin, products, searchTerm, sortOption]);
 
   const totalStock = useMemo(
     () =>
@@ -142,11 +143,13 @@ export default function CatalogPage({
           placeholder={searchPlaceholder}
         />
 
-        <select value={sortOption} onChange={(event) => setSortOption(event.target.value)}>
-          <option value="">Sort By Price</option>
-          <option value="lowtohigh">Low to High</option>
-          <option value="hightolow">High to Low</option>
-        </select>
+        {isAdmin ? (
+          <select value={sortOption} onChange={(event) => setSortOption(event.target.value)}>
+            <option value="">Sort By Price</option>
+            <option value="lowtohigh">Low to High</option>
+            <option value="hightolow">High to Low</option>
+          </select>
+        ) : null}
       </div>
 
       <div className="product-grid">
@@ -173,7 +176,7 @@ export default function CatalogPage({
                 <img src={getAssetUrl(item.images?.[0])} alt={item.name} />
                 <h3>{item.name}</h3>
                 <p>{item.brand}</p>
-                <p>{formatCurrency(item.price)}</p>
+                {isAdmin ? <p>{formatCurrency(item.price)}</p> : null}
               </Link>
             </div>
           ))

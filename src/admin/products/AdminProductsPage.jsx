@@ -172,6 +172,8 @@ export default function AdminProductsPage() {
                     src={getAssetUrl(product.images?.[0])}
                     alt={product.name}
                     className="admin-product-hero"
+                    loading="lazy"
+                    decoding="async"
                   />
 
                   <div className="admin-product-body">

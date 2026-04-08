@@ -6,11 +6,15 @@ import { Context } from "../../../registrationpage/loginpages/LogincontextV2";
 const OrderContext = createContext();
 
 export default function OrderProvider({ children }) {
-  const { user } = useContext(Context);
+  const { user, loadingUser } = useContext(Context);
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const fetchOrders = useCallback(async () => {
+    if (loadingUser) {
+      return [];
+    }
+
     if (!user) {
       setOrders([]);
       setLoading(false);
@@ -30,7 +34,7 @@ export default function OrderProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [loadingUser, user]);
 
   const cancelOrder = useCallback(async (id) => {
     await request(`/orders/${id}/cancel`, "PUT");
@@ -45,8 +49,10 @@ export default function OrderProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
+    if (!loadingUser) {
+      fetchOrders();
+    }
+  }, [fetchOrders, loadingUser]);
 
   const value = useMemo(
     () => ({

@@ -1,4 +1,3 @@
-import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import WishlistProvider from "./registrationpage/wishlisht/wishlistcontextV2.jsx";
 import App from "./App.jsx";
@@ -8,13 +7,11 @@ import "./home/Home.css";
 import "./admin/admin.css";
 
 createRoot(document.getElementById("root")).render(
-  <StrictMode>
-    <Logincontext>
-      <WishlistProvider>
-        <OrderProvider>
-          <App />
-        </OrderProvider>
-      </WishlistProvider>
-    </Logincontext>
-  </StrictMode>,
+  <Logincontext>
+    <WishlistProvider>
+      <OrderProvider>
+        <App />
+      </OrderProvider>
+    </WishlistProvider>
+  </Logincontext>,
 );

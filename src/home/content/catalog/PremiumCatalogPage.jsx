@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { Heart, Search, SlidersHorizontal, Sparkles, Star } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -6,6 +6,8 @@ import { Context as Logincontext } from "../../../registrationpage/loginpages/Lo
 import { WishlistContext } from "../../../registrationpage/wishlisht/wishlistcontextV2";
 import { getAssetUrl, request } from "../../../services/apiClient";
 import formatCurrency from "../../../utilitis/formatCurrency";
+
+const PAGE_SIZE = 24;
 
 export default function PremiumCatalogPage({
   category,
@@ -17,78 +19,118 @@ export default function PremiumCatalogPage({
   const [searchTerm, setSearchTerm] = useState("");
   const [sortOption, setSortOption] = useState("");
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
   const [wishlistLoading, setWishlistLoading] = useState(null);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const previousCategoryRef = useRef(category);
+  const deferredSearchTerm = useDeferredValue(searchTerm);
 
   const { user } = useContext(Logincontext) || {};
+  const isAdmin = user?.role === "admin";
   const {
     wishlist = [],
     addToWishlist,
     removeFromWishlist,
-    fetchWishlist,
   } = useContext(WishlistContext) || {};
 
   useEffect(() => {
+    if (previousCategoryRef.current !== category) {
+      previousCategoryRef.current = category;
+      setProducts([]);
+      setError("");
+      setPageNumber(1);
+      setTotalProducts(0);
+      setTotalPages(1);
+      return;
+    }
+
+    let active = true;
+
     const fetchProducts = async () => {
       try {
-        setLoading(true);
-        setError("");
+        if (pageNumber === 1) {
+          setLoading(true);
+          setProducts([]);
+          setError("");
+        } else {
+          setLoadingMore(true);
+        }
 
         const query = category
-          ? `/products?category=${encodeURIComponent(category)}&pageSize=100`
-          : "/products?pageSize=100";
+          ? `/products?category=${encodeURIComponent(category)}&pageSize=${PAGE_SIZE}&pageNumber=${pageNumber}`
+          : `/products?pageSize=${PAGE_SIZE}&pageNumber=${pageNumber}`;
 
         const data = await request(query);
-        setProducts(Array.isArray(data?.products) ? data.products : []);
+        if (!active) {
+          return;
+        }
+
+        const nextProducts = Array.isArray(data?.products) ? data.products : [];
+        const resolvedTotalProducts = Number(data?.totalProducts ?? data?.totalproducts);
+        const resolvedTotalPages = Math.max(1, Number(data?.pages) || 1);
+
+        setProducts((currentProducts) =>
+          pageNumber === 1
+            ? nextProducts
+            : [
+                ...currentProducts,
+                ...nextProducts.filter(
+                  (product) =>
+                    !currentProducts.some((currentProduct) => currentProduct._id === product._id)
+                ),
+              ]
+        );
+        setTotalProducts(
+          Number.isFinite(resolvedTotalProducts) ? resolvedTotalProducts : nextProducts.length
+        );
+        setTotalPages(resolvedTotalPages);
       } catch (fetchError) {
+        if (!active) {
+          return;
+        }
+
         setError(fetchError.message || "Failed to load products");
-        setProducts([]);
+        if (pageNumber === 1) {
+          setProducts([]);
+          setTotalProducts(0);
+          setTotalPages(1);
+        }
       } finally {
-        setLoading(false);
+        if (active) {
+          setLoading(false);
+          setLoadingMore(false);
+        }
       }
     };
 
     fetchProducts();
-  }, [category]);
 
-  useEffect(() => {
-    if (user) {
-      fetchWishlist();
-    }
-  }, [fetchWishlist, user]);
+    return () => {
+      active = false;
+    };
+  }, [category, pageNumber]);
 
   const wishlistIds = useMemo(() => new Set(wishlist.map((item) => item._id)), [wishlist]);
 
   const filteredProducts = useMemo(() => {
-    const normalizedSearch = searchTerm.trim().toLowerCase();
+    const normalizedSearch = deferredSearchTerm.trim().toLowerCase();
     const nextProducts = products.filter((product) =>
       product?.name?.toLowerCase().includes(normalizedSearch)
     );
 
-    if (sortOption === "lowtohigh") {
+    if (isAdmin && sortOption === "lowtohigh") {
       return [...nextProducts].sort((a, b) => a.price - b.price);
     }
 
-    if (sortOption === "hightolow") {
+    if (isAdmin && sortOption === "hightolow") {
       return [...nextProducts].sort((a, b) => b.price - a.price);
     }
 
     return nextProducts;
-  }, [products, searchTerm, sortOption]);
-
-  const totalStock = useMemo(
-    () =>
-      filteredProducts.reduce(
-        (total, product) =>
-          total +
-          (product?.variants || []).reduce(
-            (variantTotal, variant) => variantTotal + (variant.stock || 0),
-            0
-          ),
-        0
-      ),
-    [filteredProducts]
-  );
+  }, [deferredSearchTerm, isAdmin, products, sortOption]);
 
   const featuredCount = useMemo(
     () => filteredProducts.filter((product) => product.isFeatured).length,
@@ -105,6 +147,8 @@ export default function PremiumCatalogPage({
       filteredProducts.length
     );
   }, [filteredProducts]);
+
+  const hasMoreProducts = pageNumber < totalPages;
 
   const toggleWishlist = async (product) => {
     if (!user) {
@@ -139,22 +183,37 @@ export default function PremiumCatalogPage({
         </div>
 
         <div className="store-hero-metrics">
-          <div>
-            <span>Products</span>
-            <strong>{filteredProducts.length}</strong>
-          </div>
-          <div>
-            <span>Featured</span>
-            <strong>{featuredCount}</strong>
-          </div>
-          <div>
-            <span>Avg. price</span>
-            <strong>{formatCurrency(averagePrice)}</strong>
-          </div>
-          <div>
-            <span>Stock pool</span>
-            <strong>{totalStock}</strong>
-          </div>
+          {isAdmin ? (
+            <>
+              <div>
+                <span>Visible</span>
+                <strong>{filteredProducts.length}</strong>
+              </div>
+              <div>
+                <span>Featured</span>
+                <strong>{featuredCount}</strong>
+              </div>
+              <div>
+                <span>Avg. price</span>
+                <strong>{formatCurrency(averagePrice)}</strong>
+              </div>
+              <div>
+                <span>Catalog</span>
+                <strong>{totalProducts || filteredProducts.length}</strong>
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <span>Catalog</span>
+                <strong>Visible styles only</strong>
+              </div>
+              <div>
+                <span>Browse</span>
+                <strong>Product details</strong>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -169,14 +228,16 @@ export default function PremiumCatalogPage({
           />
         </label>
 
-        <label className="store-filter-field">
-          <SlidersHorizontal size={16} />
-          <select value={sortOption} onChange={(event) => setSortOption(event.target.value)}>
-            <option value="">Sort by price</option>
-            <option value="lowtohigh">Low to high</option>
-            <option value="hightolow">High to low</option>
-          </select>
-        </label>
+        {isAdmin ? (
+          <label className="store-filter-field">
+            <SlidersHorizontal size={16} />
+            <select value={sortOption} onChange={(event) => setSortOption(event.target.value)}>
+              <option value="">Sort by price</option>
+              <option value="lowtohigh">Low to high</option>
+              <option value="hightolow">High to low</option>
+            </select>
+          </label>
+        ) : null}
       </div>
 
       <div className="product-grid premium-product-grid">
@@ -211,6 +272,8 @@ export default function PremiumCatalogPage({
                     src={getAssetUrl(item.images?.[0])}
                     alt={item.name}
                     className="product-image"
+                    loading="lazy"
+                    decoding="async"
                   />
                   <div className="product-badges">
                     {item.isFeatured ? (
@@ -236,14 +299,22 @@ export default function PremiumCatalogPage({
                   </div>
 
                   <div className="product-copy-bottom">
-                    <p className="product-price">{formatCurrency(item.price)}</p>
-                    <span className="product-stock">
-                      {(item.variants || []).reduce(
-                        (total, variant) => total + (variant.stock || 0),
-                        0
-                      )}{" "}
-                      units
-                    </span>
+                    {isAdmin ? (
+                      <>
+                        <p className="product-price">{formatCurrency(item.price)}</p>
+                        <span className="product-stock">
+                          {(item.variants || []).reduce(
+                            (total, variant) => total + (variant.stock || 0),
+                            0
+                          )}{" "}
+                          units
+                        </span>
+                      </>
+                    ) : (
+                      <span className="product-stock">
+                        {item.inStock === false ? "Currently unavailable" : "View product"}
+                      </span>
+                    )}
                   </div>
                 </div>
               </Link>
@@ -256,6 +327,19 @@ export default function PremiumCatalogPage({
           </div>
         )}
       </div>
+
+      {!loading && !error && hasMoreProducts ? (
+        <div className="store-load-more-row">
+          <button
+            type="button"
+            className="store-secondary-button"
+            onClick={() => setPageNumber((currentPage) => currentPage + 1)}
+            disabled={loadingMore}
+          >
+            {loadingMore ? "Loading more..." : "Load more products"}
+          </button>
+        </div>
+      ) : null}
     </section>
   );
 }

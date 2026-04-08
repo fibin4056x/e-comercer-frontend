@@ -236,6 +236,8 @@ export default function AdminOrdersPage() {
                           src={getAssetUrl(item.image)}
                           alt={item.name}
                           className="admin-product-thumb"
+                          loading="lazy"
+                          decoding="async"
                         />
                         <div>
                           <strong>{item.name}</strong>

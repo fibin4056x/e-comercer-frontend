@@ -1,8 +1,8 @@
 import { Navigate } from "react-router-dom";
 
-export default function ProtectedRoute({ user, children }) {
-  if (user === undefined) {
-    return null;
+export default function ProtectedRoute({ user, loadingUser, children }) {
+  if (loadingUser) {
+    return <div style={{ padding: "3rem", textAlign: "center" }}>Checking admin access...</div>;
   }
 
   if (!user) {

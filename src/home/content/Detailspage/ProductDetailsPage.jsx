@@ -30,6 +30,7 @@ export default function ProductDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, setCart } = useContext(Context) || {};
+  const isAdmin = user?.role === "admin";
 
   const [product, setProduct] = useState(null);
   const [mainImage, setMainImage] = useState("");
@@ -92,10 +93,41 @@ export default function ProductDetailsPage() {
     [product, selectedColor, selectedSize]
   );
 
+  const isVariantAvailable = useCallback((variant) => {
+    if (!variant) {
+      return false;
+    }
+
+    if (typeof variant.stock === "number") {
+      return variant.stock > 0;
+    }
+
+    if (typeof variant.available === "boolean") {
+      return variant.available;
+    }
+
+    return false;
+  }, []);
+
   const totalStock = useMemo(
-    () => (product?.variants || []).reduce((total, variant) => total + (variant.stock || 0), 0),
-    [product]
+    () =>
+      isAdmin
+        ? (product?.variants || []).reduce((total, variant) => total + (variant.stock || 0), 0)
+        : 0,
+    [isAdmin, product]
   );
+
+  const hasAvailableStock = useMemo(() => {
+    if (!product) {
+      return false;
+    }
+
+    if (typeof product.inStock === "boolean") {
+      return product.inStock;
+    }
+
+    return (product.variants || []).some((variant) => isVariantAvailable(variant));
+  }, [isVariantAvailable, product]);
 
   const handleAddToCart = async () => {
     if (!user) {
@@ -106,6 +138,11 @@ export default function ProductDetailsPage() {
 
     if (!selectedVariant) {
       toast.warning("Choose a valid size and color");
+      return;
+    }
+
+    if (!isVariantAvailable(selectedVariant)) {
+      toast.error("Out of stock");
       return;
     }
 
@@ -216,7 +253,13 @@ export default function ProductDetailsPage() {
     <div className="store-section product-detail-layout">
       <section className="product-gallery-panel">
         <div className="product-main-image-shell">
-          <img src={mainImage} alt={product.name} className="product-main-image" />
+          <img
+            src={mainImage}
+            alt={product.name}
+            className="product-main-image"
+            decoding="async"
+            fetchPriority="high"
+          />
         </div>
 
         <div className="product-thumbnail-row">
@@ -230,7 +273,13 @@ export default function ProductDetailsPage() {
                 className={`product-thumbnail-button${resolvedImage === mainImage ? " product-thumbnail-button--active" : ""}`}
                 onClick={() => setMainImage(resolvedImage)}
               >
-                <img src={resolvedImage} alt={product.name} className="product-thumbnail-image" />
+                <img
+                  src={resolvedImage}
+                  alt={product.name}
+                  className="product-thumbnail-image"
+                  loading="lazy"
+                  decoding="async"
+                />
               </button>
             );
           })}
@@ -253,11 +302,13 @@ export default function ProductDetailsPage() {
           </span>
         </div>
 
-        <div className="product-price-row">
-          <strong>{formatCurrency(product.price || 0)}</strong>
-          {product.originalPrice ? <span>{formatCurrency(product.originalPrice)}</span> : null}
-          {product.discount ? <p>{product.discount}% seasonal markdown</p> : null}
-        </div>
+        {isAdmin ? (
+          <div className="product-price-row">
+            <strong>{formatCurrency(product.price || 0)}</strong>
+            {product.originalPrice ? <span>{formatCurrency(product.originalPrice)}</span> : null}
+            {product.discount ? <p>{product.discount}% seasonal markdown</p> : null}
+          </div>
+        ) : null}
 
         <p className="product-description">
           {product.description || "No description has been added for this product yet."}
@@ -274,7 +325,15 @@ export default function ProductDetailsPage() {
           </div>
           <div>
             <CheckCircle2 size={18} />
-            <span>{totalStock > 0 ? `${totalStock} units available` : "Currently out of stock"}</span>
+            <span>
+              {isAdmin
+                ? totalStock > 0
+                  ? `${totalStock} units available`
+                  : "Currently out of stock"
+                : hasAvailableStock
+                  ? "Available to order"
+                  : "Currently unavailable"}
+            </span>
           </div>
         </div>
 
@@ -283,9 +342,16 @@ export default function ProductDetailsPage() {
             <p>Select size</p>
             <div className="product-chip-row">
               {sizes.map((size) => {
-                const stockForSize = (product.variants || [])
-                  .filter((variant) => variant.size === size)
-                  .reduce((total, variant) => total + (variant.stock || 0), 0);
+                const matchingVariants = (product.variants || []).filter(
+                  (variant) => variant.size === size
+                );
+                const stockForSize = matchingVariants.reduce(
+                  (total, variant) => total + (variant.stock || 0),
+                  0
+                );
+                const sizeAvailable = matchingVariants.some((variant) =>
+                  isVariantAvailable(variant)
+                );
 
                 return (
                   <button
@@ -293,9 +359,9 @@ export default function ProductDetailsPage() {
                     type="button"
                     className={`product-chip${selectedSize === size ? " product-chip--active" : ""}`}
                     onClick={() => setSelectedSize(size)}
-                    disabled={stockForSize === 0}
+                    disabled={!sizeAvailable}
                   >
-                    {size}
+                    {isAdmin ? `${size} (${stockForSize})` : size}
                   </button>
                 );
               })}
@@ -313,9 +379,9 @@ export default function ProductDetailsPage() {
                   type="button"
                   className={`product-chip${selectedColor === variant.color ? " product-chip--active" : ""}`}
                   onClick={() => setSelectedColor(variant.color)}
-                  disabled={variant.stock === 0}
+                  disabled={!isVariantAvailable(variant)}
                 >
-                  {variant.color}
+                  {isAdmin ? `${variant.color} (${variant.stock || 0})` : variant.color}
                 </button>
               ))}
             </div>
@@ -326,9 +392,15 @@ export default function ProductDetailsPage() {
           <div className="product-stock-card">
             <span>Availability</span>
             <strong>
-              {selectedVariant?.stock > 0
-                ? `${selectedVariant.stock} left in this variant`
-                : "Select an available variant"}
+              {!selectedVariant
+                ? "Select a variant"
+                : isAdmin
+                  ? selectedVariant.stock > 0
+                    ? `${selectedVariant.stock} left in this variant`
+                    : "Select an available variant"
+                  : isVariantAvailable(selectedVariant)
+                    ? "Available"
+                    : "Unavailable"}
             </strong>
           </div>
 
@@ -336,13 +408,15 @@ export default function ProductDetailsPage() {
             type="button"
             className="store-primary-button"
             onClick={handleAddToCart}
-            disabled={!selectedVariant || selectedVariant.stock === 0 || addingToCart}
+            disabled={!selectedVariant || !isVariantAvailable(selectedVariant) || addingToCart}
           >
             <ShoppingBag size={16} />
             <span>
               {addingToCart
                 ? "Adding..."
-                : selectedVariant?.stock === 0
+                : !selectedVariant
+                  ? "Select a variant"
+                  : !isVariantAvailable(selectedVariant)
                   ? "Out of stock"
                   : "Add to cart"}
             </span>

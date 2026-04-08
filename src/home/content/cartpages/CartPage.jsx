@@ -104,6 +104,8 @@ export default function CartPage() {
                   src={getAssetUrl(item.product?.images?.[0])}
                   alt={item.product?.name}
                   className="cart-item-image"
+                  loading="lazy"
+                  decoding="async"
                 />
 
                 <div className="cart-item-copy">

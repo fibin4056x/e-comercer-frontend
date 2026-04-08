@@ -251,6 +251,8 @@ export default function AdminDashboardPage() {
                         src={getAssetUrl(product.images?.[0])}
                         alt={product.name}
                         className="admin-product-thumb"
+                        loading="lazy"
+                        decoding="async"
                       />
                       <div>
                         <strong>{product.name}</strong>

@@ -21,6 +21,7 @@ export default function Home() {
   const [wishlistLoading, setWishlistLoading] = useState(null);
 
   const { user } = useContext(Logincontext) || {};
+  const isAdmin = user?.role === "admin";
 
   const {
     wishlist = [],
@@ -102,16 +103,16 @@ export default function Home() {
       p?.name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    if (sortOption === "lowtohigh") {
+    if (isAdmin && sortOption === "lowtohigh") {
       result.sort((a, b) => a.price - b.price);
     }
 
-    if (sortOption === "hightolow") {
+    if (isAdmin && sortOption === "hightolow") {
       result.sort((a, b) => b.price - a.price);
     }
 
     return result;
-  }, [data, searchTerm, sortOption]);
+  }, [data, isAdmin, searchTerm, sortOption]);
 
   /* ================= WISHLIST TOGGLE ================= */
 
@@ -160,11 +161,13 @@ export default function Home() {
           placeholder="Search products..."
         />
 
-        <select onChange={(e) => setSortOption(e.target.value)}>
-          <option value="">Sort By Price</option>
-          <option value="lowtohigh">Low to High</option>
-          <option value="hightolow">High to Low</option>
-        </select>
+        {isAdmin ? (
+          <select onChange={(e) => setSortOption(e.target.value)}>
+            <option value="">Sort By Price</option>
+            <option value="lowtohigh">Low to High</option>
+            <option value="hightolow">High to Low</option>
+          </select>
+        ) : null}
       </div>
 
       <div className="product-grid">
@@ -199,7 +202,7 @@ export default function Home() {
 
                 <h3>{item.name}</h3>
                 <p>{item.brand}</p>
-                <p>₹{item.price}</p>
+                {isAdmin ? <p>₹{item.price}</p> : null}
               </Link>
             </div>
           ))

@@ -5,12 +5,16 @@ import { request } from "../../services/apiClient";
 const WishlistContext = createContext();
 
 function WishlistProvider({ children }) {
-  const { user } = useContext(LoginContext);
+  const { user, loadingUser } = useContext(LoginContext);
   const [wishlist, setWishlist] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const fetchWishlist = useCallback(async () => {
+    if (loadingUser) {
+      return [];
+    }
+
     if (!user) {
       setWishlist([]);
       setError("");
@@ -33,11 +37,13 @@ function WishlistProvider({ children }) {
     } finally {
       setLoading(false);
     }
-  }, [user]);
+  }, [loadingUser, user]);
 
   useEffect(() => {
-    fetchWishlist();
-  }, [fetchWishlist]);
+    if (!loadingUser) {
+      fetchWishlist();
+    }
+  }, [fetchWishlist, loadingUser]);
 
   const addToWishlist = useCallback(
     async (product) => {

@@ -60,8 +60,10 @@ function Logincontext({ children }) {
   }, [restoreUser]);
 
   useEffect(() => {
-    fetchCart();
-  }, [fetchCart]);
+    if (!loadingUser) {
+      fetchCart();
+    }
+  }, [fetchCart, loadingUser]);
 
   const logout = useCallback(async () => {
     try {

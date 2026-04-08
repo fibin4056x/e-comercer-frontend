@@ -189,6 +189,8 @@ export default function CheckoutPage() {
                 src={getAssetUrl(item.product?.images?.[0])}
                 alt={item.product?.name}
                 className="checkout-item-image"
+                loading="lazy"
+                decoding="async"
               />
 
               <div>
