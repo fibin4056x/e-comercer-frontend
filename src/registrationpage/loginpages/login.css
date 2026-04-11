@@ -135,6 +135,7 @@
   font-weight: 600;
   transition: 0.3s ease;
   backdrop-filter: blur(10px);
+ 
 }
 
 .back-btn:hover {
